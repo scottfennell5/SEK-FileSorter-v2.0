@@ -2,10 +2,6 @@ import customtkinter as ctk
 from customtkinter import CTkScrollableFrame
 from functools import partial
 
-from FileSorter_Sorter import Sorter
-from FileSorter_DataHandler import DataHandler
-from FileSorter_Controller import Controller
-
 class FileSorter(ctk.CTk):
     def __init__(self, controller):
         super().__init__()
