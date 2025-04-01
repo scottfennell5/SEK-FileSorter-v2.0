@@ -92,12 +92,6 @@ class MainFrame(ctk.CTkFrame):
 
     def populateHeader(self,parent):
         col = 0
-        """
-        #TESTING PURPOSES ONLY
-        file_label = ctk.CTkLabel(header,text="File Name",font=("Bold", 20),corner_radius=0,width=75,justify="left",anchor="w")
-        file_label.grid(row=0,column=col,padx=(5,0),pady=5,sticky='w')
-        col += 1
-        """
         header_label = ctk.CTkLabel(parent, text=f"Files",font=("Bold", 20),corner_radius=0,width=75,justify="left",anchor="w")
         header_label.pack(side=ctk.LEFT,padx=(8,0),pady=(5,2))
         col += 1
@@ -176,12 +170,3 @@ class MainFrame(ctk.CTkFrame):
         #update table with new data
         print("Refreshing the UI with updated data.")
         self.populateTable(self.scrollable)
-
-if __name__ == '__main__':
-    dataHandler = DataHandler()
-    sorter = Sorter()
-
-    controller = Controller(dataHandler, sorter)
-
-    program = FileSorter(controller)
-    program.mainloop()
