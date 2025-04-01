@@ -4,20 +4,14 @@ class Controller:
         self.dataHandler = dataHandler
         dataHandler.scanFiles()
         self.sorter = sorter
-        self.observers = []
+        self.observer = None
         print("init controller complete")
 
-    def addObserver(self, observer):
-        if observer not in self.observers:
-            self.observers.append(observer)
+    def newObserver(self, observer):
+        self.observer = observer
 
-    def removeObserver(self, observer):
-        if observer in self.observers:
-            self.observers.remove(observer)
-
-    def notifyObservers(self):
-        for observer in self.observers:
-            observer.update()
+    def notifyObserver(self):
+        self.observer.update()
 
     def createLogs(self):
         print("creating logs...")
@@ -31,4 +25,4 @@ class Controller:
         self.sorter.verify()
 
     def updateFiles(self):
-        self.notifyObservers()
+        self.notifyObserver()
