@@ -24,8 +24,8 @@ class Home(ctk.CTkFrame):
 
     def populateHeader(self):
         col = 0
-        header_label = ctk.CTkLabel(self.header, text=f"Files",font=("Bold", 20),corner_radius=0,width=75,justify="left",anchor="w")
-        header_label.pack(side=ctk.LEFT,padx=(8,0),pady=(5,2))
+        header_label = ctk.CTkLabel(self.header, text="Home",font=("Bold", 30),corner_radius=0,width=75,justify="left",anchor="w")
+        header_label.pack(side=ctk.LEFT,padx=(8,150),pady=(5,2))
         col += 1
 
         button_frame = ctk.CTkFrame(self.header, fg_color="transparent")
@@ -37,21 +37,16 @@ class Home(ctk.CTkFrame):
         sort_button.pack(side=ctk.RIGHT, padx=4)
         col += 1
 
-        open_button = ctk.CTkButton(button_frame,text="Refresh Data",width=125,
+        refresh_button = ctk.CTkButton(button_frame,text="Refresh Data",width=125,
                                     fg_color="#1E1E1E", text_color="#BB86FC", hover_color="#2E2E2E",
-                                    command=lambda : self.controller.notifyObservers())
-        open_button.pack(side=ctk.RIGHT,padx=4)
+                                    command=lambda : self.controller.notifyObserver())
+        refresh_button.pack(side=ctk.RIGHT,padx=4)
         col += 1
 
     def populateTable(self):
-        print("populateTable() called")
-        print(f"self: {self}")
-        print(f"selfID: {id(self)}")
-        print(f"self.scrollable: {self.scrollable}")
-        print(f"self.scrollable.winfo_children(): {self.scrollable.winfo_children()}")
         for widget in self.scrollable.winfo_children():
             widget.destroy()
-        print(f"self.scrollable.winfo_children(): {self.scrollable.winfo_children()}")
+
         MAX_LENGTH = 30
         files = self.controller.getFiles()
         col = 0
@@ -69,15 +64,6 @@ class Home(ctk.CTkFrame):
         }
 
         for row in files.itertuples():
-            """
-            #TESTING PURPOSES ONLY
-            file_name = row.File_Name
-            if len(file_name) > MAX_LENGTH:
-                file_name = file_name[:MAX_LENGTH].rstrip() + "..."
-            file_label = ctk.CTkLabel(parent,text=file_name,corner_radius=0,justify="left",anchor="w")
-            file_label.grid(row=row.Index+1,column=col,padx=(5,0),pady=5,sticky='w')
-            col+=1
-            """
 
             client_name = row.First_Name
             if len(client_name) > MAX_LENGTH:
@@ -111,6 +97,8 @@ class Home(ctk.CTkFrame):
         print("Refreshing the UI with updated data.")
         print(f"self: {self}")
         print(f"selfID: {id(self)}")
+        self.controller.test()
+        print("-------------------------")
         self.populateTable()
 
 class FileInput(ctk.CTkFrame):

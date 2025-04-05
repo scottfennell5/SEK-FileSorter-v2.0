@@ -1,8 +1,8 @@
 import customtkinter as ctk
 
-from FileSorter.GUI_Frames.Home import Home
-from FileSorter.GUI_Frames.Settings import Settings
-from FileSorter.GUI_Frames.Help import Help
+from FileSorter.GUI.Home import Home
+from FileSorter.GUI.Settings import Settings
+from FileSorter.GUI.Help import Help
 
 class FileSorter(ctk.CTk):
     def __init__(self, controller):
@@ -37,22 +37,25 @@ class FileSorter(ctk.CTk):
         return [x, y]
 
     def setWindow(self,window):
-        for widget in self.mainFrame.winfo_children():
-            widget.destroy()
+        if window == self.current_window:
+            pass
+        else:
+            for widget in self.mainFrame.winfo_children():
+                widget.destroy()
 
-        match window:
-            case "home":
-                frame = Home(self.controller, self.mainFrame, fg_color="#1E1E1E", corner_radius=6)
-            case "settings":
-                frame = Settings(self.controller, self.mainFrame, fg_color="#1E1E1E", corner_radius=6)
-            case "help":
-                frame = Help(self.controller, self.mainFrame, fg_color="#1E1E1E", corner_radius=6)
-            case _:
-                exit(0)
-        print(self.mainFrame.winfo_children())
-        frame.place(relx=0, rely=0, relwidth=1, relheight=1)
-        self.current_window = window
-        print(self.current_window)
+            match window:
+                case "home":
+                    frame = Home(self.controller, self.mainFrame, fg_color="#1E1E1E", corner_radius=6)
+                case "settings":
+                    frame = Settings(self.controller, self.mainFrame, fg_color="#1E1E1E", corner_radius=6)
+                case "help":
+                    frame = Help(self.controller, self.mainFrame, fg_color="#1E1E1E", corner_radius=6)
+                case _:
+                    exit(0)
+            print(self.mainFrame.winfo_children())
+            frame.place(relx=0, rely=0, relwidth=1, relheight=1)
+            self.current_window = window
+            print(self.current_window)
 
 class OptionsFrame(ctk.CTkFrame):
     def __init__(self, controller, master, **kwargs):

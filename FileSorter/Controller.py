@@ -3,6 +3,7 @@ class Controller:
     def __init__(self, dataHandler, sorter):
         self.dataHandler = dataHandler
         dataHandler.scanFiles()
+        #self.settings=dataHandler.getSettings()
         self.sorter = sorter
         self.observer = None
         print("init controller complete")
@@ -19,10 +20,8 @@ class Controller:
     def getFiles(self):
         return self.dataHandler.getFiles()
 
-    def verify(self):
-        print("controller good!")
-        self.dataHandler.verify()
-        self.sorter.verify()
-
     def updateFiles(self):
         self.notifyObserver()
+
+    def test(self):
+        self.dataHandler.saveDataInstance()

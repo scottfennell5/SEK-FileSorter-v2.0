@@ -1,6 +1,12 @@
+import yaml
+
 class Sorter:
     def __init__(self):
-         print("init sorter complete")
+        self.target_path = r""
+        print("init sorter complete")
 
-    def verify(self):
-        print("sorter good!")
+    def setTargetPath(self,path):
+        self.target_path=path
+
+    def sortFile(self,file_info):
+        pass #file_info is a row from the files dataframe

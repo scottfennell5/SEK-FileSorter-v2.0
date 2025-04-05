@@ -1,4 +1,6 @@
 import pandas as pd
+import yaml
+from os import path
 
 class DataHandler:
 
@@ -11,9 +13,11 @@ class DataHandler:
                   'File_Description':pd.Series(dtype="string")}
     files_df = pd.DataFrame(files_dict)
 
-    path_files = r"unknown"
-
     def __init__(self):
+        self.file_path = ""
+        data_dir = path.join(path.dirname(path.realpath(__file__)),"PersistentData")
+        self.olddata_path = path.join(data_dir,"olddata.yaml")
+        self.settings_path = path.join(data_dir,"settings.yaml")
         print("init datahandler complete")
 
     def scanFiles(self):
@@ -54,8 +58,15 @@ class DataHandler:
     def getFiles(self):
         return self.files_df.copy()
 
-    def verify(self):
-        print("datahandler good!")
+    def readSettings(self):
+        pass
 
-    def updateFilePath(self, path):
-        self.path_files = path
+    def saveSettings(self):
+        pass
+
+    def saveDataInstance(self):
+        yaml_output = yaml.dump(self.files_df.to_dict(orient="index"), sort_keys=False)
+        print(yaml_output)
+
+    def setFilePath(self, path):
+        self.file_path = path
