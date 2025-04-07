@@ -47,45 +47,60 @@ class Home(ctk.CTkFrame):
         for widget in self.scrollable.winfo_children():
             widget.destroy()
 
-        MAX_LENGTH = 30
-        files = self.controller.getFiles()
-        col = 0
+        files = self.controller.getDataCopy()
+        if files is None:
+            label = ctk.CTkLabel(self.scrollable, text="No files detected! \n\n\nIf you expected files here, \nmake sure the Client Directory path in 'Settings' is correct.")
+            label.grid(row=0,column=0,padx=8,pady=5,sticky='new')
+            return
 
-        STATUS_READY_STYLE = {
-            "text": "Ready",
+        MAX_LENGTH = 30
+
+        STATUS_COMPLETE_STYLE = {
+            "text": "Complete",
             "fg_color": "#388E3C",
             "text_color": "#E0E0E0"
         }
 
-        STATUS_NOT_READY_STYLE = {
-            "text": "Not Ready",
+        STATUS_INCOMPLETE_STYLE = {
+            "text": "Incomplete",
             "fg_color": "#D97925",
             "text_color": "#E0E0E0"
         }
 
-        for row in files.itertuples():
+        #grabs the specified columns below, and
+        clients = list(zip(files['First_Name'], files['File_Status'], files['File_Name']))
 
-            client_name = row.First_Name
+        NAME=0
+        STATUS=1
+        FILE_NAME=2
+
+        row = 0
+        col = 0
+        for client in clients:
+
+            client_name = client[NAME]
             if len(client_name) > MAX_LENGTH:
                 client_name = client_name[:MAX_LENGTH].rstrip() + "..."
-            client = ctk.CTkLabel(self.scrollable,text=client_name,corner_radius=0,width=75,
+            client_label = ctk.CTkLabel(self.scrollable,text=client_name,corner_radius=0,width=75,
                                   text_color="#d1cfcf",
                                   justify="left",anchor="w")
-            client.grid(row=row.Index+1,column=col,padx=(8,0),pady=5,sticky='w')
+            client_label.grid(row=row+1,column=col,padx=(8,0),pady=5,sticky='w')
             col+=1
 
-            style = STATUS_READY_STYLE if row.File_Status else STATUS_NOT_READY_STYLE
+            status = client[STATUS]
+            style = STATUS_COMPLETE_STYLE if client[STATUS] else STATUS_INCOMPLETE_STYLE
             status_label = ctk.CTkLabel(self.scrollable, **style,corner_radius=5, width=50,justify="left", anchor="w")
-            status_label.grid(row=row.Index + 1, column=col, pady=5, sticky='w')
+            status_label.grid(row=row+1, column=col, pady=5, sticky='w')
             col+=1
 
             open_button = ctk.CTkButton(self.scrollable,text="Open File",width=125,
                                         fg_color="#1E1E1E",text_color="#BB86FC",hover_color="#2E2E2E",
-                                        command=partial(self.openFile, row.File_Name))
-            open_button.grid(row=row.Index+1,column=col,pady=5,sticky='w')
+                                        command=partial(self.openFile, client[FILE_NAME]))
+            open_button.grid(row=row+1,column=col,pady=5,sticky='w')
             col += 1
 
             col = 0
+            row += 1
 
     def openFile(self, file_name):
         inputOverlay = FileInput(self.controller,file_name,self)
@@ -97,7 +112,6 @@ class Home(ctk.CTkFrame):
         print("Refreshing the UI with updated data.")
         print(f"self: {self}")
         print(f"selfID: {id(self)}")
-        self.controller.test()
         print("-------------------------")
         self.populateTable()
 

@@ -1,8 +1,8 @@
 import customtkinter as ctk
 
-from FileSorter.GUI.Home import Home
-from FileSorter.GUI.Settings import Settings
-from FileSorter.GUI.Help import Help
+from GUI.Home import Home
+from GUI.Settings import Settings
+from GUI.Help import Help
 
 class FileSorter(ctk.CTk):
     def __init__(self, controller):
@@ -43,13 +43,18 @@ class FileSorter(ctk.CTk):
             for widget in self.mainFrame.winfo_children():
                 widget.destroy()
 
+            WINDOW_STYLE = {
+                "fg_color":"#1E1E1E",
+                "corner_radius":6
+            }
+
             match window:
                 case "home":
-                    frame = Home(self.controller, self.mainFrame, fg_color="#1E1E1E", corner_radius=6)
+                    frame = Home(self.controller, self.mainFrame, **WINDOW_STYLE)
                 case "settings":
-                    frame = Settings(self.controller, self.mainFrame, fg_color="#1E1E1E", corner_radius=6)
+                    frame = Settings(self.controller, self.mainFrame, **WINDOW_STYLE)
                 case "help":
-                    frame = Help(self.controller, self.mainFrame, fg_color="#1E1E1E", corner_radius=6)
+                    frame = Help(self.controller, self.mainFrame, **WINDOW_STYLE)
                 case _:
                     exit(0)
             print(self.mainFrame.winfo_children())

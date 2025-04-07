@@ -1,6 +1,7 @@
+import sys
 import pandas as pd
 import yaml
-from os import path
+import os
 
 class DataHandler:
 
@@ -14,10 +15,9 @@ class DataHandler:
     files_df = pd.DataFrame(files_dict)
 
     def __init__(self):
-        self.file_path = ""
-        data_dir = path.join(path.dirname(path.realpath(__file__)),"PersistentData")
-        self.olddata_path = path.join(data_dir,"olddata.yaml")
-        self.settings_path = path.join(data_dir,"settings.yaml")
+        self.olddata_path = self.resourcePath(r"PersistentData\Data\olddata.yaml")
+        self.settings_path = self.resourcePath(r"PersistentData\Data\settings.yaml")
+        self.file_path = self.resourcePath(r"Files")
         print("init datahandler complete")
 
     def scanFiles(self):
@@ -47,7 +47,7 @@ class DataHandler:
                     'File_Name': [f'file{i}.pdf'],
                     'File_Status': [False],
                     'Client_Type': ['unknown'],
-                    'First_Name': ['unknown'],
+                    'First_Name': ['unknown client'],
                     'Second_Name': [None],
                     'Year': [1984],
                     'File_Description': ['unknown']
@@ -55,8 +55,11 @@ class DataHandler:
             self.files_df = pd.concat([self.files_df, new_row], ignore_index=True)
         print(self.files_df)
 
-    def getFiles(self):
-        return self.files_df.copy()
+    def getDataCopy(self):
+        if self.files_df is None:
+            return None
+        else:
+            return self.files_df.copy()
 
     def readSettings(self):
         pass
@@ -65,8 +68,27 @@ class DataHandler:
         pass
 
     def saveDataInstance(self):
-        yaml_output = yaml.dump(self.files_df.to_dict(orient="index"), sort_keys=False)
-        print(yaml_output)
+        with open(self.olddata_path,'w') as file:
+            cfg = yaml.dump(self.files_df.to_dict(orient="records"),
+                            stream=file, default_flow_style=False, sort_keys=False)
+        self.files_df = None
+
+    def loadDataInstance(self):
+        with open(self.olddata_path, 'r') as file:
+            self.files_df = pd.json_normalize(yaml.load(file, Loader=yaml.FullLoader))
+
+    def filterData(self):
+        actual_files = set(os.listdir(self.file_path))
+        self.files_df = self.files_df[
+            self.files_df["File_Name"].isin(actual_files).reset_index(drop=True)
+        ]
 
     def setFilePath(self, path):
         self.file_path = path
+
+    def getFilePath(self):
+        return self.file_path
+
+    def resourcePath(self, relative_path):
+        base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
+        return os.path.join(base_path, relative_path)
