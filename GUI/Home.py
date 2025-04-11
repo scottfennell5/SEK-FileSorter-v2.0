@@ -48,7 +48,8 @@ class Home(ctk.CTkFrame):
             widget.destroy()
 
         files = self.controller.getDataCopy()
-        if files is None:
+        print(f"files:{files}")
+        if files.empty or files is None:
             label = ctk.CTkLabel(self.scrollable, text="No files detected! \n\n\nIf you expected files here, \nmake sure the Client Directory path in 'Settings' is correct.")
             label.grid(row=0,column=0,padx=8,pady=5,sticky='new')
             return
@@ -108,7 +109,6 @@ class Home(ctk.CTkFrame):
         inputOverlay.lift()
 
     def update(self):
-        #update table with new data
         print("Refreshing the UI with updated data.")
         print(f"self: {self}")
         print(f"selfID: {id(self)}")
@@ -118,14 +118,29 @@ class Home(ctk.CTkFrame):
 class FileInput(ctk.CTkFrame):
     def __init__(self, controller, file_name, master, **kwargs):
         super().__init__(master, **kwargs)
-        self.label = ctk.CTkLabel(self,text=f"file: {file_name}")
-        self.label.grid(row=0,column=0,sticky='ew')
-
-        self.close_button = ctk.CTkButton(self, text="Do Nothing", command=self.close)
-        self.close_button.grid(row=1, column=0, pady=10)
-
+        self.controller = controller
         self.grid_columnconfigure(0, weight=1)
-        self.grid_rowconfigure(0, weight=1)
+        self.grid_rowconfigure(1, weight=1)
+
+        self.header = ctk.CTkFrame(self, corner_radius=5, fg_color="#1E1E1E")
+        self.header.grid(row=0, column=0, pady=(8, 4), sticky='nw')
+        self.populateHeader()
+
+        self.body = ctk.CTkFrame(self, corner_radius=5, fg_color="transparent")
+        self.body.grid(row=1, column=0, sticky='nsew')
+        self.body.columnconfigure(0, weight=0)
+        self.body.columnconfigure(1, weight=1)
+        self.body.columnconfigure(2, weight=0)
+        self.populateBody()
+
+    def populateHeader(self):
+        pass
+
+    def populateBody(self):
+        pass
+
+    def saveChanges(self):
+        pass
 
     def close(self):
         self.destroy()

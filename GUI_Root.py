@@ -38,29 +38,29 @@ class FileSorter(ctk.CTk):
 
     def setWindow(self,window):
         if window == self.current_window:
-            pass
-        else:
-            for widget in self.mainFrame.winfo_children():
-                widget.destroy()
+            return
 
-            WINDOW_STYLE = {
-                "fg_color":"#1E1E1E",
-                "corner_radius":6
-            }
+        for widget in self.mainFrame.winfo_children():
+            widget.destroy()
 
-            match window:
-                case "home":
-                    frame = Home(self.controller, self.mainFrame, **WINDOW_STYLE)
-                case "settings":
-                    frame = Settings(self.controller, self.mainFrame, **WINDOW_STYLE)
-                case "help":
-                    frame = Help(self.controller, self.mainFrame, **WINDOW_STYLE)
-                case _:
-                    exit(0)
-            print(self.mainFrame.winfo_children())
-            frame.place(relx=0, rely=0, relwidth=1, relheight=1)
-            self.current_window = window
-            print(self.current_window)
+        WINDOW_STYLE = {
+            "fg_color":"#1E1E1E",
+            "corner_radius":6
+        }
+
+        match window:
+            case "home":
+                frame = Home(self.controller, self.mainFrame, **WINDOW_STYLE)
+            case "settings":
+                frame = Settings(self.controller, self.mainFrame, **WINDOW_STYLE)
+            case "help":
+                frame = Help(self.controller, self.mainFrame, **WINDOW_STYLE)
+            case _:
+                exit(0)
+        print(self.mainFrame.winfo_children())
+        frame.place(relx=0, rely=0, relwidth=1, relheight=1)
+        self.current_window = window
+        print(self.current_window)
 
 class OptionsFrame(ctk.CTkFrame):
     def __init__(self, controller, master, **kwargs):
