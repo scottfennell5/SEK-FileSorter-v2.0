@@ -1,12 +1,20 @@
 import yaml
 
+FILE_NAME = 0
+STATUS = 1
+CLIENT_TYPE = 2
+CLIENT_NAME = 3
+CLIENT_NAME_2 = 4
+YEAR = 5
+DESCRIPTION = 6
+
 class Sorter:
     def __init__(self):
         self.target_path = None
-        print("init sorter complete")
 
-    def updateTargetPath(self,path):
+    def update_target_path(self, path):
         self.target_path=path
 
-    def sortFile(self,file_info):
-        pass #file_info is a row from the files dataframe
+    def sort_file(self, file_info):
+        #file_info = [file name, status, client type, client name, 2nd client name (or None), year, description]
+        pass

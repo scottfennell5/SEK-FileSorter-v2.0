@@ -2,6 +2,7 @@ import sys
 import pandas as pd
 import yaml
 import os
+import logging
 
 class DataHandler:
 
@@ -14,28 +15,31 @@ class DataHandler:
                   'File_Description':pd.Series(dtype="string")}
 
     def __init__(self):
+        logging.debug("Init Datahandler")
         self.files_df = pd.DataFrame(self.files_dict)
-        self.olddata_path = self.resourcePath(r"PersistentData\Data\olddata.yaml")
-        self.settings_path = self.resourcePath(r"PersistentData\Data\settings.yaml")
+        self.olddata_path = self.resource_path(r"PersistentData\Data\olddata.yaml")
+        self.settings_path = self.resource_path(r"PersistentData\Data\settings.yaml")
         self.file_path = ""
         self.target_path = ""
 
-    def getDataCopy(self):
+    def get_data_copy(self):
         return self.files_df.copy()
 
-    def loadSettings(self):
+    def load_settings(self):
         with open(self.settings_path, 'r') as file:
             settings = yaml.load(file, Loader=yaml.FullLoader)
 
         self.file_path = settings["file_path"]
         if (self.file_path is None) or (not os.path.exists(self.file_path)):
+            logging.info("dataHandler.load_settings: file_path invalid, setting to empty ''")
             self.file_path = ""
 
         self.target_path = settings["target_path"]
         if (self.target_path is None) or (not os.path.exists(self.target_path)):
+            logging.info("dataHandler.load_settings: target_path invalid, setting to empty ''")
             self.target_path = ""
 
-    def saveSettings(self):
+    def save_settings(self):
         settings = {
             "file_path":self.file_path,
             "target_path":self.target_path
@@ -47,28 +51,30 @@ class DataHandler:
                       default_flow_style=False,
                       sort_keys=False)
 
-    def saveDataInstance(self):
+    def save_data_instance(self):
         with open(self.olddata_path,'w') as file:
             yaml.dump(self.files_df.to_dict(orient="records"),
                       stream=file,
                       default_flow_style=False,
                       sort_keys=False)
 
-    def loadDataInstance(self):
+    def load_data_instance(self):
         with open(self.olddata_path, 'r') as file:
             self.files_df = pd.json_normalize(yaml.load(file, Loader=yaml.FullLoader))
 
-    def filterData(self):
+    def filter_data(self):
         #Removes rows that correlate to files that no longer exist or cannot be found.
         if self.file_path == "":
+            logging.warning("dataHandler.filter_data: called with empty file path")
             self.files_df = pd.DataFrame(self.files_dict)
             return
 
         actual_files = set(os.listdir(self.file_path))
         self.files_df = (self.files_df[self.files_df["File_Name"].isin(actual_files)].reset_index(drop=True))
 
-    def scanFiles(self):
+    def scan_files(self):
         if self.file_path == "":
+            logging.warning("dataHandler.scan_files: called with empty file path")
             return
 
         actual_files = os.listdir(self.file_path)
@@ -82,7 +88,7 @@ class DataHandler:
                 new_row = pd.DataFrame({
                     'File_Name': [file],
                     'File_Status': [False],
-                    'Client_Type': ['unknown'],
+                    'Client_Type': ['Client'],
                     'First_Name': ['unknown client'],
                     'Second_Name': [None],
                     'Year': [1984],
@@ -90,31 +96,42 @@ class DataHandler:
                 })
                 self.files_df = pd.concat([self.files_df, new_row], ignore_index=True)
 
-    def refreshData(self):
-        self.loadDataInstance()
-        self.filterData()
-        self.scanFiles()
+    def refresh_data(self):
+        self.load_data_instance()
+        self.filter_data()
+        self.scan_files()
 
-    def setFilePath(self, path):
+    def set_file_path(self, path):
         self.file_path = path
 
-    def getFilePath(self):
+    def get_file_path(self):
         return self.file_path
 
-    def setTargetPath(self, path):
+    def set_target_path(self, path):
         self.target_path = path
 
-    def getTargetPath(self):
+    def get_target_path(self):
         return self.target_path
 
-    def getBaseDirectory(self):
-        return self.resourcePath("")
+    def get_base_directory(self):
+        return self.resource_path("")
 
-    def resourcePath(self, relative_path):
-        base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
+    def resource_path(self, relative_path):
+        base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__))) #path to project directory AKA where the exe is located
         return os.path.join(base_path, relative_path)
 
-    def populateTempData(self):
+    def get_row(self, file_name):
+        row = self.files_df[self.files_df["File_Name"]==file_name]
+        if not row.empty:
+            #returns the row as a list, lambda casts the entire row into pure Python types (to avoid NumPy issues)
+            return row.iloc[0].apply(lambda x: x.item() if hasattr(x, 'item') else x).tolist()
+        return None
+
+    def remove_row(self, file_name):
+        pass #remove row from dataframe, if it has been sorted
+
+
+    def populate_temp_data(self):
         for i in range(1, 30):
             if i == 5:
                 new_row = pd.DataFrame({

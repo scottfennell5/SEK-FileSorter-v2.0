@@ -1,79 +1,84 @@
+import logging
+
 class Controller:
 
     FILES_ID = "files"
     TARGET_ID = "target"
 
     def __init__(self, dataHandler, sorter):
+        logging.debug("Init Controller")
         self.dataHandler = dataHandler
-        self.dataHandler.loadSettings()
-        self.dataHandler.refreshData()
+        self.dataHandler.load_settings()
+        self.dataHandler.refresh_data()
         self.sorter = sorter
-        self.sorter.updateTargetPath(self.dataHandler.getTargetPath())
+        self.sorter.update_target_path(self.dataHandler.get_target_path())
         self.observer = None
 
-    def newObserver(self, observer):
+    def new_observer(self, observer):
         self.observer = observer
 
-    def notifyObserver(self):
+    def notify_observer(self):
         self.observer.update()
 
-    def createLogs(self):
+    def create_logs(self):
         pass #logs when application closes
 
-    def getDataCopy(self):
-        return self.dataHandler.getDataCopy()
+    def get_data_copy(self):
+        return self.dataHandler.get_data_copy()
 
-    def getPath(self, pathID):
-        path = None
+    def get_path(self, pathID):
         match pathID:
             case self.FILES_ID:
-                path = self.dataHandler.getFilePath()
+                path = self.dataHandler.get_file_path()
             case self.TARGET_ID:
-                path = self.dataHandler.getTargetPath()
+                path = self.dataHandler.get_target_path()
             case _:
-                print("invalid path ID")
+                logging.exception(f"pathID invalid:{pathID}")
+                raise ValueError("Invalid pathID passed into controller.get_path()")
 
         if path is None:
             return ""
         else:
             return path
 
-    def setPath(self, pathID, path):
+    def set_path(self, pathID, path):
         if path == '':
-            print("warning: setPath called with no specified path! No action was taken from controller")
+            logging.warning("called with empty path, no action taken from controller")
             return
         match pathID:
             case self.FILES_ID:
-                self.dataHandler.setFilePath(path)
-                self.dataHandler.refreshData()
+                self.dataHandler.set_file_path(path)
+                self.dataHandler.refresh_data()
             case self.TARGET_ID:
-                self.dataHandler.setTargetPath(path)
-                self.sorter.updateTargetPath(path)
+                self.dataHandler.set_target_path(path)
+                self.sorter.update_target_path(path)
 
+    def update_files(self):
+        self.notify_observer()
 
-    def getBaseDirectory(self):
-        return self.dataHandler.getBaseDirectory()
+    def save_data(self):
+        self.dataHandler.save_data_instance()
 
-    def updateFiles(self):
-        self.notifyObserver()
+    def load_data(self):
+        self.dataHandler.load_data_instance()
 
-    def saveData(self):
-        self.dataHandler.saveDataInstance()
+    def check_data(self):
+        print(self.dataHandler.get_data_copy())
 
-    def loadData(self):
-        self.dataHandler.loadDataInstance()
+    def filter_data(self):
+        self.dataHandler.filter_data()
 
-    def checkData(self):
-        print(self.dataHandler.getDataCopy())
+    def save_settings(self):
+        self.dataHandler.save_settings()
 
-    def filterData(self):
-        self.dataHandler.filterData()
+    def get_settings(self):
+        self.dataHandler.load_settings()
 
-    def saveSettings(self):
-        self.dataHandler.saveSettings()
+    def get_resource(self, relative_path):
+        return self.dataHandler.resource_path(relative_path)
 
-    def getSettings(self):
-        self.dataHandler.loadSettings()
+    def get_base_directory(self):
+        return self.dataHandler.get_base_directory()
 
-    def getResource(self,relative_path):
-        return self.dataHandler.resourcePath(relative_path)
+    def get_row(self, file_name):
+        return self.dataHandler.get_row(file_name)
