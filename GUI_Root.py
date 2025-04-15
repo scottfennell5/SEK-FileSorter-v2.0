@@ -24,8 +24,8 @@ class FileSorter(ctk.CTk):
         self.grid_columnconfigure(1, weight=3)
         self.grid_rowconfigure(0, weight=1)
 
-        self.optionsFrame = Menu(controller, self, fg_color="#1E1E1E", corner_radius=6)
-        self.optionsFrame.grid(row=0,column=0,padx=8,pady=8,sticky='nsew')
+        self.menuFrame = Menu(controller, self, fg_color="#1E1E1E", corner_radius=6)
+        self.menuFrame.grid(row=0, column=0, padx=8, pady=8, sticky='nsew')
 
         self.mainFrame = ctk.CTkFrame(self, fg_color="transparent")
         self.mainFrame.grid(row=0, column=1, padx=(0, 8), pady=8, sticky='nsew')
