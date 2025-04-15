@@ -21,23 +21,34 @@ class DataHandler:
         self.settings_path = self.resource_path(r"PersistentData\Data\settings.yaml")
         self.file_path = ""
         self.target_path = ""
+        self.browser_path = ""
 
     def get_data_copy(self):
         return self.files_df.copy()
+
+    def open_file(self,file_name):
+        if self.file_path == "":
+            logging.warning("File path undefined! cant open file")
+        if file_name.isin(os.listdir(self.file_path)):
+            #open file
+            pass
+        else:
+            logging.info(f"File {file_name} not found!")
 
     def load_settings(self):
         with open(self.settings_path, 'r') as file:
             settings = yaml.load(file, Loader=yaml.FullLoader)
 
-        self.file_path = settings["file_path"]
-        if (self.file_path is None) or (not os.path.exists(self.file_path)):
-            logging.info("dataHandler.load_settings: file_path invalid, setting to empty ''")
-            self.file_path = ""
+        def get_valid_path(key):
+            path = settings.get(key)
+            if (path is None) or (not os.path.exists(path)):
+                logging.info(f"{key} invalid, setting to empty ''")
+                return ""
+            return path
 
-        self.target_path = settings["target_path"]
-        if (self.target_path is None) or (not os.path.exists(self.target_path)):
-            logging.info("dataHandler.load_settings: target_path invalid, setting to empty ''")
-            self.target_path = ""
+        self.file_path = get_valid_path("file_path")
+        self.target_path = get_valid_path("target_path")
+        self.browser_path = get_valid_path("browser_path")
 
     def save_settings(self):
         settings = {
@@ -88,7 +99,7 @@ class DataHandler:
                 new_row = pd.DataFrame({
                     'File_Name': [file],
                     'File_Status': [False],
-                    'Client_Type': ['Client'],
+                    'Client_Type': ['unknown'],
                     'First_Name': ['unknown client'],
                     'Second_Name': [None],
                     'Year': [1984],
@@ -113,11 +124,17 @@ class DataHandler:
     def get_target_path(self):
         return self.target_path
 
+    def set_browser_path(self, path):
+        self.browser_path = path
+
+    def get_browser_path(self):
+        return self.browser_path
+
     def get_base_directory(self):
         return self.resource_path("")
 
     def resource_path(self, relative_path):
-        base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__))) #path to project directory AKA where the exe is located
+        base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__))) #path to project directory or where the exe is located
         return os.path.join(base_path, relative_path)
 
     def get_row(self, file_name):

@@ -1,6 +1,7 @@
 import customtkinter as ctk
 import logging
 
+from GUI.Menu import Menu
 from GUI.Home import Home
 from GUI.Settings import Settings
 from GUI.Help import Help
@@ -23,7 +24,7 @@ class FileSorter(ctk.CTk):
         self.grid_columnconfigure(1, weight=3)
         self.grid_rowconfigure(0, weight=1)
 
-        self.optionsFrame = OptionsFrame(controller,self,fg_color="#1E1E1E",corner_radius=6)
+        self.optionsFrame = Menu(controller, self, fg_color="#1E1E1E", corner_radius=6)
         self.optionsFrame.grid(row=0,column=0,padx=8,pady=8,sticky='nsew')
 
         self.mainFrame = ctk.CTkFrame(self, fg_color="transparent")
@@ -62,30 +63,3 @@ class FileSorter(ctk.CTk):
         frame.place(relx=0, rely=0, relwidth=1, relheight=1)
         self.current_window = window
         logging.debug(self.current_window)
-
-class OptionsFrame(ctk.CTkFrame):
-    def __init__(self, controller, master, **kwargs):
-        super().__init__(master, **kwargs)
-        self.controller = controller
-        self.grid_columnconfigure(0, weight=1)
-
-        buttons = [
-            ("Home", lambda : master.set_window("home")),
-            ("Settings", lambda : master.set_window("settings")),
-            ("Help", lambda : master.set_window("help"))
-        ]
-
-        BUTTON_STYLE = {
-            "font": ("Bold", 40),
-            "corner_radius": 0,
-            "height": 50,
-            "anchor": "w",
-            "fg_color": "#1E1E1E",
-            "bg_color": "transparent",
-            "text_color": "#d1cfcf",
-            "hover_color": "#7e4694"
-        }
-
-        for i, (text, cmd) in enumerate(buttons):
-            (ctk.CTkButton(self, text=text, border_spacing=2, command=cmd, **BUTTON_STYLE)
-            .grid(row=i, column=0, pady=20, sticky='ew'))

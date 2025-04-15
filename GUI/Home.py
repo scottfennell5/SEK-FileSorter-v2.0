@@ -1,4 +1,5 @@
 import customtkinter as ctk
+import tkinter as tk
 from functools import partial
 import logging
 
@@ -184,10 +185,16 @@ class FileInput(ctk.CTkFrame):
                                     fg_color="transparent",justify="left",anchor="w")
         header_label.pack(side=ctk.LEFT,padx=(8, 0),pady=(5, 2))
 
+        open_file_button = close_button = ctk.CTkButton(self.header, text="Open PDF", width=125,
+                                     fg_color="#1E1E1E", text_color="#BB86FC", hover_color="#2E2E2E",
+                                     command=lambda: self.close())
+
         close_button = ctk.CTkButton(self.header, text="Close", width=125,
                                      fg_color="#CBC3E3", text_color="black", hover_color="#2E2E2E",
-                                     command=lambda: self.close())
+                                     command=lambda: self.open())
+
         close_button.pack(side=ctk.RIGHT, padx=4, pady=5)
+        open_file_button.pack(side=ctk.RIGHT, padx=4, pady=5)
 
     def populate_body(self):
         tab_view = ctk.CTkTabview(self.body,fg_color="#1A1A1A", corner_radius=0)
@@ -199,33 +206,81 @@ class FileInput(ctk.CTkFrame):
         except ValueError:
             tab_view.set("Client")
 
-        #client tab
-        name_1_header = ctk.CTkLabel(tab_client,text="Client 1")
-        name_1_header.grid(row=0,column=0)
-        name_1_first_label = ctk.CTkLabel(tab_client,text="First name: ")
-        name_1_first_label.grid(row=1,column=0)
-        name_1_first_entry = ctk.CTkEntry(tab_client,placeholder_text="Bob")
-        name_1_first_entry.grid(row=1,column=1)
-        name_1_last_label = ctk.CTkLabel(tab_client, text="Last name: ")
+        self.populate_client(tab_client)
+        tab_client.columnconfigure(1,weight=1)
+        tab_client.columnconfigure(3, weight=1)
+        self.populate_business(tab_business)
+
+    def populate_client(self, tab):
+        name_1_header = ctk.CTkLabel(tab, text="Client 1")
+        name_1_header.grid(row=0, column=0)
+        name_1_first_label = ctk.CTkLabel(tab, text="First name: ")
+        name_1_first_label.grid(row=1, column=0)
+        name_1_first_entry = ctk.CTkEntry(tab, placeholder_text="Bob")
+        name_1_first_entry.grid(row=1, column=1)
+        name_1_last_label = ctk.CTkLabel(tab, text="Last name: ")
         name_1_last_label.grid(row=1, column=2)
-        name_1_last_entry = ctk.CTkEntry(tab_client, placeholder_text="Smith")
+        name_1_last_entry = ctk.CTkEntry(tab, placeholder_text="Smith")
         name_1_last_entry.grid(row=1, column=3)
 
-        name_2_radio = ctk.CTkRadioButton(tab_client)
-        name_2_radio.grid(row=2,column=0)
-        name_2_header = ctk.CTkLabel(tab_client, text="Client 2")
-        name_2_header.grid(row=3, column=0)
-        name_2_first_label = ctk.CTkLabel(tab_client, text="First name: ")
-        name_2_first_label.grid(row=4, column=0)
-        name_2_first_entry = ctk.CTkEntry(tab_client, placeholder_text="Amanda")
-        name_2_first_entry.grid(row=4, column=1)
-        name_2_last_label = ctk.CTkLabel(tab_client, text="Last name: ")
-        name_2_last_label.grid(row=4, column=2)
-        name_2_last_entry = ctk.CTkEntry(tab_client, placeholder_text="Smith")
-        name_2_last_entry.grid(row=4, column=3)
+        def radiobutton_event():
+            if name_2_radio_var.get() == 1:
+                name_2_frame.grid(row=3, column=0, columnspan=4)
+            else:
+                name_2_frame.grid_forget()
 
+        name_2_radio_label = ctk.CTkLabel(tab, text="Client 2?")
+        name_2_radio_label.grid(row=2, column=0)
+        name_2_radio_var = tk.IntVar(value=0)
+        name_2_radio_yes = ctk.CTkRadioButton(tab, text="Yes",
+                                              command=radiobutton_event, variable=name_2_radio_var, value=1)
+        name_2_radio_yes.grid(row=2, column=1)
+        name_2_radio_no = ctk.CTkRadioButton(tab, text="No",
+                                             command=radiobutton_event, variable=name_2_radio_var, value=0)
+        name_2_radio_no.grid(row=2, column=2)
+        name_2_radio_no.select()
 
-        #business tab
+        name_2_frame = ctk.CTkFrame(tab, fg_color="transparent")
+        # name_2_frame.grid(row=3, column=0, columnspan=5)
+        name_2_header = ctk.CTkLabel(name_2_frame, text="Client 2")
+        name_2_header.grid(row=0, column=0)
+        name_2_first_label = ctk.CTkLabel(name_2_frame, text="First name: ")
+        name_2_first_label.grid(row=1, column=0)
+        name_2_first_entry = ctk.CTkEntry(name_2_frame, placeholder_text="Amanda")
+        name_2_first_entry.grid(row=1, column=1)
+        name_2_last_label = ctk.CTkLabel(name_2_frame, text="Last name: ")
+        name_2_last_label.grid(row=1, column=2)
+        name_2_last_entry = ctk.CTkEntry(name_2_frame, placeholder_text="Smith")
+        name_2_last_entry.grid(row=1, column=3)
+
+        year_label = ctk.CTkLabel(tab, text="Year:")
+        year_label.grid(row=4, column=0)
+        year_entry = ctk.CTkEntry(tab, placeholder_text="1984")
+        year_entry.grid(row=4, column=1)
+
+        description_label = ctk.CTkLabel(tab, text="File Description:")
+        description_label.grid(row=5, column=0)
+        description_entry = ctk.CTkEntry(tab, placeholder_text="Form 8879")
+        description_entry.grid(row=5, column=1)
+
+    def populate_business(self,tab):
+        business_name_header = ctk.CTkLabel(tab, text="Business 1")
+        business_name_header.grid(row=0, column=0)
+
+        business_name_label = ctk.CTkLabel(tab, text="Business name: ")
+        business_name_label.grid(row=1, column=0)
+        business_name_entry = ctk.CTkEntry(tab, placeholder_text="'Business INC' or 'Business LLC'",width=300)
+        business_name_entry.grid(row=1, column=1)
+
+        year_label = ctk.CTkLabel(tab, text="Year:",)
+        year_label.grid(row=2, column=0)
+        year_entry = ctk.CTkEntry(tab, placeholder_text="1984",width=100)
+        year_entry.grid(row=2, column=1)
+
+        description_label = ctk.CTkLabel(tab, text="File Description:")
+        description_label.grid(row=3, column=0)
+        description_entry = ctk.CTkEntry(tab, placeholder_text="Form 8879",width=300)
+        description_entry.grid(row=3, column=1)
 
     def save_changes(self):
         pass

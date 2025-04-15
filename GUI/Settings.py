@@ -12,6 +12,7 @@ MAX_LENGTH = 50
 
 FILES_ID = "files"
 TARGET_ID = "target"
+BROWSER_ID = "browser"
 
 NO_PATH = "no path found!"
 
@@ -21,6 +22,7 @@ class Settings(ctk.CTkFrame):
         self.controller = controller
         self.filepath = self.controller.get_path(FILES_ID)
         self.targetpath = self.controller.get_path(TARGET_ID)
+        self.browserpath = self.controller.get_path(BROWSER_ID)
         self.pending_changes = False
         self.grid_columnconfigure(0,weight=1)
 
@@ -40,63 +42,70 @@ class Settings(ctk.CTkFrame):
         self.footer.grid(row=2,column=0,sticky='nsew')
 
     def populate_header(self):
+        for widget in self.header.winfo_children():
+            widget.destroy()
         header_label = ctk.CTkLabel(self.header, text="Settings", font=("Bold", 30), corner_radius=0, width=75,
                                     justify="left", anchor="w")
         header_label.pack(side=ctk.LEFT, padx=(8, 0), pady=(5, 2))
 
     def populate_body(self):
-        # load images
+        for widget in self.body.winfo_children():
+            widget.destroy()
+
+        def create_path_setting(row, label_text, path, path_id, image, view_command=None):
+            label = ctk.CTkLabel(self.body, text=label_text, font=("Bold", 20),
+                                 corner_radius=0, justify="left", anchor="w")
+            label.grid(row=row, column=0, padx=(8, 0), pady=5, sticky="nw")
+
+            display_text = NO_PATH if path == "" else path
+            path_button = ctk.CTkButton(self.body, text=display_text, anchor='w',
+                                        fg_color="transparent", bg_color="transparent", hover_color="#2b2b2b",
+                                        command=lambda: self.change_directory(path_id))
+            path_button.grid(row=row, column=1, pady=5, sticky="new")
+
+            if len(path) > MAX_LENGTH:
+                ttp.CreateToolTip(path_button, path)
+
+            if view_command:
+                view_btn = ctk.CTkButton(self.body, text="", hover=False, image=image,
+                                         bg_color="transparent", fg_color="transparent",
+                                         width=IMG_WIDTH, height=IMG_HEIGHT,
+                                         command=view_command)
+                view_btn.grid(row=row, column=2, pady=(0, 5))
+
         search_path = self.controller.get_resource("PersistentData\Icons\search_icon.png")
-        print(f"search:{search_path}")
         search_image = ctk.CTkImage(Image.open(search_path), size=(IMG_WIDTH, IMG_HEIGHT))
 
-        # display settings
-        # file path
-        filepath_label = ctk.CTkLabel(self.body, text="Scanned Files:", font=("Bold", 20),
-                                           corner_radius=0, justify="left", anchor="w")
-        filepath_label.grid(row=0, column=0, padx=(8, 0), pady=5, sticky="nw")
+        create_path_setting(
+            row=0,
+            label_text="Scanned Files:",
+            path=self.filepath,
+            path_id=FILES_ID,
+            image=search_image,
+            view_command=lambda: self.view_directory(self.filepath)
+        )
 
-        if self.filepath == "":
-            text = NO_PATH
-        else:
-            text = self.filepath
-        filepath_path_label = ctk.CTkButton(self.body, text=text, anchor='w',
-                                            fg_color="transparent", bg_color="transparent", hover_color="#2b2b2b",
-                                            command=lambda: self.change_directory(FILES_ID))
-        filepath_path_label.grid(row=0, column=1, pady=5, sticky="new")
-        if len(self.filepath) > MAX_LENGTH:
-            ttp.CreateToolTip(filepath_path_label, self.filepath)
+        create_path_setting(
+            row=1,
+            label_text="Client Directory:",
+            path=self.targetpath,
+            path_id=TARGET_ID,
+            image=search_image,
+            view_command=lambda: self.view_directory(self.targetpath)
+        )
 
-        filepath_view_btn = ctk.CTkButton(self.body, text="", hover=False, image=search_image,
-                                          bg_color="transparent", fg_color="transparent",
-                                          width=IMG_WIDTH, height=IMG_HEIGHT,
-                                          command=lambda: self.view_directory(self.filepath))
-        filepath_view_btn.grid(row=0, column=2, pady=(0, 5))
-
-        # target path
-        targetpath_label = ctk.CTkLabel(self.body, text="Client Directory: ", font=("Bold", 20),
-                                             corner_radius=0, justify="left", anchor="w")
-        targetpath_label.grid(row=1, column=0, padx=8, pady=5, sticky="nw")
-
-        if self.targetpath == "":
-            text = NO_PATH
-        else:
-            text = self.targetpath
-        targetpath_path_label = ctk.CTkButton(self.body, text=text, anchor='w',
-                                              fg_color="transparent", bg_color="transparent",
-                                              hover_color="#2b2b2b",
-                                              command=lambda: self.change_directory(TARGET_ID))
-        targetpath_path_label.grid(row=1, column=1, pady=5, sticky="new")
-        if len(self.targetpath) > MAX_LENGTH:
-            ttp.CreateToolTip(targetpath_path_label, self.targetpath)
-
-        targetpath_search_btn = ctk.CTkButton(self.body, text="", hover=False, image=search_image,
-                                              bg_color="transparent", fg_color="transparent",
-                                              width=IMG_WIDTH, height=IMG_HEIGHT,
-                                              command=lambda: self.view_directory(self.targetpath))
-        targetpath_search_btn.grid(row=1, column=2, pady=(0, 5))
+        create_path_setting(
+            row=2,
+            label_text="Browser:",
+            path=self.browserpath,
+            path_id=BROWSER_ID,
+            image=None
+        )
 
     def populate_footer(self):
+        for widget in self.footer.winfo_children():
+            widget.destroy()
+
         apply_button = ctk.CTkButton(self.footer, text="Apply", width=125,
                                      fg_color="#CBC3E3", text_color="black", hover_color="#2E2E2E",
                                      command=lambda: self.apply_changes())
@@ -129,8 +138,11 @@ class Settings(ctk.CTkFrame):
             print(f"attempt to open path: {path} failed, invalid path")
 
     def change_directory(self, pathID):
-        path = filedialog.askdirectory(initialdir=self.controller.get_base_directory(),
-                                       title=f"Please select the directory you would like to change {pathID} to.")
+        if pathID == BROWSER_ID:
+            path = filedialog.askopenfilename(title="Select the EXE file for your browser",filetypes=[("Executables","*.exe")])
+        else:
+            path = filedialog.askdirectory(initialdir=self.controller.get_base_directory(),
+                                           title=f"Please select the directory you would like to change {pathID} to.")
 
         if path == "":
             logging.debug("path is empty, no action taken")
@@ -148,14 +160,21 @@ class Settings(ctk.CTkFrame):
                               message="Error: Client directory cannot be the same as Scanned Files directory! \nPlease choose a new path.")
             else:
                 self.targetpath = path
+        elif pathID == BROWSER_ID:
+            self.browserpath = path
         self.pending_changes = True
         self.update()
+
+    def select_browser(self):
+        pass
 
     def apply_changes(self):
         if self.filepath != "":
             self.controller.set_path(FILES_ID, self.filepath)
         if self.targetpath != "":
             self.controller.set_path(TARGET_ID, self.targetpath)
+        if self.browserpath != "":
+            self.controller.set_path(BROWSER_ID, self.browserpath)
 
         self.controller.save_settings()
         self.pending_changes = False
@@ -164,5 +183,6 @@ class Settings(ctk.CTkFrame):
     def cancel_changes(self):
         self.filepath = self.controller.get_path(FILES_ID)
         self.targetpath = self.controller.get_path(TARGET_ID)
+        self.browserpath = self.controller.get_path(BROWSER_ID)
         self.pending_changes = False
         self.update()

@@ -4,6 +4,7 @@ class Controller:
 
     FILES_ID = "files"
     TARGET_ID = "target"
+    BROWSER_ID = "browser"
 
     def __init__(self, dataHandler, sorter):
         logging.debug("Init Controller")
@@ -26,12 +27,20 @@ class Controller:
     def get_data_copy(self):
         return self.dataHandler.get_data_copy()
 
+    def get_row(self, file_name):
+        return self.dataHandler.get_row(file_name)
+
+    def open_file(self, file_name):
+        self.dataHandler.open_file(file_name)
+
     def get_path(self, pathID):
         match pathID:
             case self.FILES_ID:
                 path = self.dataHandler.get_file_path()
             case self.TARGET_ID:
                 path = self.dataHandler.get_target_path()
+            case self.BROWSER_ID:
+                path = self.dataHandler.get_browser_path()
             case _:
                 logging.exception(f"pathID invalid:{pathID}")
                 raise ValueError("Invalid pathID passed into controller.get_path()")
@@ -79,6 +88,3 @@ class Controller:
 
     def get_base_directory(self):
         return self.dataHandler.get_base_directory()
-
-    def get_row(self, file_name):
-        return self.dataHandler.get_row(file_name)
