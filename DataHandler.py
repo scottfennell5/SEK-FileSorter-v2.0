@@ -1,4 +1,6 @@
 import sys
+from typing import no_type_check_decorator
+
 import pandas as pd
 import yaml
 import os
@@ -53,7 +55,8 @@ class DataHandler:
     def save_settings(self):
         settings = {
             "file_path":self.file_path,
-            "target_path":self.target_path
+            "target_path":self.target_path,
+            "browser_path":self.browser_path
         }
 
         with open(self.settings_path, 'w') as file:
@@ -70,8 +73,11 @@ class DataHandler:
                       sort_keys=False)
 
     def load_data_instance(self):
-        with open(self.olddata_path, 'r') as file:
-            self.files_df = pd.json_normalize(yaml.load(file, Loader=yaml.FullLoader))
+        try:
+            with open(self.olddata_path, 'r') as file:
+                self.files_df = pd.json_normalize(yaml.load(file, Loader=yaml.FullLoader))
+        except NotImplementedError:
+            logging.warning("tried to read empty file, NotImplementedError")
 
     def filter_data(self):
         #Removes rows that correlate to files that no longer exist or cannot be found.
@@ -91,10 +97,10 @@ class DataHandler:
         actual_files = os.listdir(self.file_path)
         files_in_df = set(self.files_df['File_Name'])
         for file in actual_files:
-            if file in files_in_df:
-                pass #avoids duplicate data
-            elif not file.endswith(".pdf"):
-                pass #only pdfs are accepted
+            duplicate_file = file in files_in_df
+            not_pdf = not file.endswith(".pdf")
+            if duplicate_file or not_pdf:
+                pass
             else:
                 new_row = pd.DataFrame({
                     'File_Name': [file],
@@ -102,12 +108,12 @@ class DataHandler:
                     'Client_Type': ['unknown'],
                     'First_Name': ['unknown client'],
                     'Second_Name': [None],
-                    'Year': [1984],
-                    'File_Description': ['unknown']
+                    'Year': [None],
+                    'File_Description': [None]
                 })
                 self.files_df = pd.concat([self.files_df, new_row], ignore_index=True)
 
-    def refresh_data(self):
+    def update(self):
         self.load_data_instance()
         self.filter_data()
         self.scan_files()
@@ -146,39 +152,3 @@ class DataHandler:
 
     def remove_row(self, file_name):
         pass #remove row from dataframe, if it has been sorted
-
-
-    def populate_temp_data(self):
-        for i in range(1, 30):
-            if i == 5:
-                new_row = pd.DataFrame({
-                    'File_Name': [f'file{i}_andareallylongname.pdf'],
-                    'File_Status': [True],
-                    'Client_Type': ['Business'],
-                    'First_Name': ['REEEEEEEEALLY LONG BUSINESS LLC'],
-                    'Second_Name': [None],
-                    'Year': [1984],
-                    'File_Description': ['unknown']
-                })
-            elif i == 10:
-                new_row = pd.DataFrame({
-                    'File_Name': [f'file{i}.pdf'],
-                    'File_Status': [True],
-                    'Client_Type': ['Person'],
-                    'First_Name': ['Josephus Smithington'],
-                    'Second_Name': [None],
-                    'Year': [1984],
-                    'File_Description': ['unknown']
-                })
-            else:
-                new_row = pd.DataFrame({
-                    'File_Name': [f'file{i}.pdf'],
-                    'File_Status': [False],
-                    'Client_Type': ['unknown'],
-                    'First_Name': ['unknown client'],
-                    'Second_Name': [None],
-                    'Year': [1984],
-                    'File_Description': ['unknown']
-                })
-            self.files_df = pd.concat([self.files_df, new_row], ignore_index=True)
-        print(self.files_df)

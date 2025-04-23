@@ -9,7 +9,6 @@ class Home(ctk.CTkFrame):
     def __init__(self, controller, master, **kwargs):
         super().__init__(master, **kwargs)
         self.controller = controller
-        self.controller.new_observer(self)
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=0)
         self.grid_rowconfigure(1, weight=1)
@@ -43,7 +42,7 @@ class Home(ctk.CTkFrame):
 
         refresh_button = ctk.CTkButton(button_frame, text="Refresh Data", width=125,
                                        fg_color="#1E1E1E", text_color="#BB86FC", hover_color="#2E2E2E",
-                                       command=lambda : self.controller.notify_observer())
+                                       command=lambda : self.update())
         refresh_button.pack(side=ctk.RIGHT,padx=4)
         col += 1
 
@@ -53,10 +52,18 @@ class Home(ctk.CTkFrame):
 
         files = self.controller.get_data_copy()
         logging.debug(f"files:{files}")
+        print(f"files:{files}")
         if files.empty or files is None:
             label = ctk.CTkLabel(self.scrollable, text="No files detected! \n\n\nIf you expected files here, \nmake sure the Client Directory path in 'Settings' is correct.")
             label.grid(row=0,column=0,padx=8,pady=5,sticky='new')
             return
+
+        #grabs the specified columns below, and
+        clients = list(zip(files['First_Name'], files['File_Status'], files['File_Name']))
+
+        NAME=0
+        STATUS=1
+        FILE_NAME=2
 
         MAX_LENGTH = 30
 
@@ -72,15 +79,7 @@ class Home(ctk.CTkFrame):
             "text_color": "#E0E0E0"
         }
 
-        #grabs the specified columns below, and
-        clients = list(zip(files['First_Name'], files['File_Status'], files['File_Name']))
-
-        NAME=0
-        STATUS=1
-        FILE_NAME=2
-
         row = 0
-        col = 0
         for client in clients:
 
             client_name = client[NAME]
@@ -89,21 +88,17 @@ class Home(ctk.CTkFrame):
             client_label = ctk.CTkLabel(self.scrollable,text=client_name,corner_radius=0,width=75,
                                   text_color="#d1cfcf",
                                   justify="left",anchor="w")
-            client_label.grid(row=row+1,column=col,padx=(8,0),pady=5,sticky='w')
-            col+=1
+            client_label.grid(row=row+1,column=0,padx=(8,0),pady=5,sticky='w')
 
             style = STATUS_COMPLETE_STYLE if client[STATUS] else STATUS_INCOMPLETE_STYLE
             status_label = ctk.CTkLabel(self.scrollable, **style,corner_radius=5, width=50,justify="left", anchor="w")
-            status_label.grid(row=row+1, column=col, pady=5, sticky='w')
-            col+=1
+            status_label.grid(row=row+1, column=1, pady=5, sticky='w')
 
             open_button = ctk.CTkButton(self.scrollable, text="Open File", width=125,
                                         fg_color="#2C2C2C", text_color="#BB86FC", hover_color="#2E2E2E",
                                         command=partial(self.open_file, self.controller.get_row(client[FILE_NAME])))
-            open_button.grid(row=row+1,column=col,pady=5,sticky='w')
-            col += 1
+            open_button.grid(row=row+1,column=2,pady=5,sticky='w')
 
-            col = 0
             row += 1
 
     def open_file(self, file_name):

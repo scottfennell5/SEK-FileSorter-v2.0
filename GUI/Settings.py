@@ -14,7 +14,7 @@ FILES_ID = "files"
 TARGET_ID = "target"
 BROWSER_ID = "browser"
 
-NO_PATH = "no path found!"
+NO_PATH = "no path found! click here to select a path."
 
 class Settings(ctk.CTkFrame):
     def __init__(self, controller, master, **kwargs):
@@ -66,12 +66,12 @@ class Settings(ctk.CTkFrame):
             if len(path) > MAX_LENGTH:
                 ttp.CreateToolTip(path_button, path)
 
-            if view_command:
-                view_btn = ctk.CTkButton(self.body, text="", hover=False, image=image,
+            if view_command and path != "":
+                view_button = ctk.CTkButton(self.body, text="", hover=False, image=image,
                                          bg_color="transparent", fg_color="transparent",
                                          width=IMG_WIDTH, height=IMG_HEIGHT,
                                          command=view_command)
-                view_btn.grid(row=row, column=2, pady=(0, 5))
+                view_button.grid(row=row, column=2, pady=(0, 5))
 
         search_path = self.controller.get_resource("PersistentData\Icons\search_icon.png")
         search_image = ctk.CTkImage(Image.open(search_path), size=(IMG_WIDTH, IMG_HEIGHT))
@@ -107,7 +107,7 @@ class Settings(ctk.CTkFrame):
             widget.destroy()
 
         apply_button = ctk.CTkButton(self.footer, text="Apply", width=125,
-                                     fg_color="#CBC3E3", text_color="black", hover_color="#2E2E2E",
+                                     fg_color="#C3B1E1", text_color="black", hover_color="#CCCCFF",
                                      command=lambda: self.apply_changes())
         apply_button.pack(side=ctk.RIGHT, padx=4, pady=5)
 

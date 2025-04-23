@@ -1,3 +1,6 @@
+from Sorter import Sorter
+from DataHandler import DataHandler
+
 import logging
 
 class Controller:
@@ -6,20 +9,31 @@ class Controller:
     TARGET_ID = "target"
     BROWSER_ID = "browser"
 
-    def __init__(self, dataHandler, sorter):
+    def __init__(self):
         logging.debug("Init Controller")
-        self.dataHandler = dataHandler
+        self.dataHandler = DataHandler()
         self.dataHandler.load_settings()
-        self.dataHandler.refresh_data()
-        self.sorter = sorter
-        self.sorter.update_target_path(self.dataHandler.get_target_path())
-        self.observer = None
+        self.dataHandler.update()
+        self.sorter = Sorter(file_path=self.dataHandler.get_file_path(),
+                             target_path=self.dataHandler.get_target_path())
+        self.observers = [self.dataHandler, self.sorter]
 
     def new_observer(self, observer):
-        self.observer = observer
+        self.observers.append(observer)
 
-    def notify_observer(self):
-        self.observer.update()
+    def set_observer_filepath(self, path):
+        logging.debug(f"Setting file path to {path} for all observers")
+        for observer in self.observers:
+            logging.debug(f"observer:{observer} to file path:{path}")
+            observer.set_file_path(path)
+            observer.update()
+
+    def set_observer_targetpath(self, path):
+        logging.debug(f"Setting target path to {path} for all observers")
+        for observer in self.observers:
+            logging.debug(f"observer:{observer} to target path:{path}")
+            observer.set_target_path(path)
+            observer.update()
 
     def create_logs(self):
         pass #logs when application closes
@@ -56,14 +70,11 @@ class Controller:
             return
         match pathID:
             case self.FILES_ID:
-                self.dataHandler.set_file_path(path)
-                self.dataHandler.refresh_data()
+                self.set_observer_filepath(path)
             case self.TARGET_ID:
-                self.dataHandler.set_target_path(path)
-                self.sorter.update_target_path(path)
-
-    def update_files(self):
-        self.notify_observer()
+                self.set_observer_targetpath(path)
+            case self.BROWSER_ID:
+                self.dataHandler.set_browser_path(path)
 
     def save_data(self):
         self.dataHandler.save_data_instance()

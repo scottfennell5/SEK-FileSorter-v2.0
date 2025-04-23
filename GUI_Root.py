@@ -3,6 +3,7 @@ import logging
 
 from GUI.Menu import Menu
 from GUI.Home import Home
+from GUI.Search import Search
 from GUI.Settings import Settings
 from GUI.Help import Help
 
@@ -53,6 +54,8 @@ class FileSorter(ctk.CTk):
         match window:
             case "home":
                 frame = Home(self.controller, self.mainFrame, **WINDOW_STYLE)
+            case "search":
+                frame = Search(self.controller, self.mainFrame, **WINDOW_STYLE)
             case "settings":
                 frame = Settings(self.controller, self.mainFrame, **WINDOW_STYLE)
             case "help":

@@ -1,3 +1,4 @@
 file_path: F:/Coding/Test_SEK/Files
-target_path: ''
-browser_path: ''
+target_path: F:/Coding/Test_SEK/Target
+browser_path: C:/Program Files/BraveSoftware/Brave-Browser/Application/brave.exe
+logs_path: F:/Coding/Test_SEK/Logs
