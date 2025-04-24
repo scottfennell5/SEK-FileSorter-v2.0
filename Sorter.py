@@ -1,13 +1,7 @@
+from Utility.constants import FILE_NAME, STATUS, CLIENT_TYPE, CLIENT_NAME, CLIENT_NAME_2, YEAR, DESCRIPTION
+
 import logging
 import yaml
-
-FILE_NAME = 0
-STATUS = 1
-CLIENT_TYPE = 2
-CLIENT_NAME = 3
-CLIENT_NAME_2 = 4
-YEAR = 5
-DESCRIPTION = 6
 
 class Sorter:
     def __init__(self, file_path, target_path):
@@ -15,15 +9,19 @@ class Sorter:
         self.target_path = target_path
 
     def set_file_path(self, path):
+        logging.debug(f"set file_path to {path}")
         self.file_path = path
 
     def get_file_path(self):
+        logging.debug(f"returned file_path: {self.file_path}")
         return self.file_path
 
     def set_target_path(self, path):
+        logging.debug(f"set target_path to {path}")
         self.target_path = path
 
     def get_target_path(self):
+        logging.debug(f"returned target_path: {self.target_path}")
         return self.target_path
 
     def update(self):

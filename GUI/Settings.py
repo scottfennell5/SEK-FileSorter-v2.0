@@ -1,28 +1,25 @@
+from Utility import ToolTip as ttp
+from Utility.constants import FILES_ID, TARGET_ID, BROWSER_ID
+
 from tkinter import filedialog
 import customtkinter as ctk
 import os
 from PIL import Image
-from Utility import ToolTip as ttp
 from CTkMessagebox import CTkMessagebox
 import logging
 
 IMG_HEIGHT = 30
 IMG_WIDTH = 30
 MAX_LENGTH = 50
-
-FILES_ID = "files"
-TARGET_ID = "target"
-BROWSER_ID = "browser"
-
 NO_PATH = "no path found! click here to select a path."
 
 class Settings(ctk.CTkFrame):
     def __init__(self, controller, master, **kwargs):
         super().__init__(master, **kwargs)
         self.controller = controller
-        self.filepath = self.controller.get_path(FILES_ID)
-        self.targetpath = self.controller.get_path(TARGET_ID)
-        self.browserpath = self.controller.get_path(BROWSER_ID)
+        self.file_path = self.controller.get_path(FILES_ID)
+        self.target_path = self.controller.get_path(TARGET_ID)
+        self.browser_path = self.controller.get_path(BROWSER_ID)
         self.pending_changes = False
         self.grid_columnconfigure(0,weight=1)
 
@@ -79,25 +76,25 @@ class Settings(ctk.CTkFrame):
         create_path_setting(
             row=0,
             label_text="Scanned Files:",
-            path=self.filepath,
+            path=self.file_path,
             path_id=FILES_ID,
             image=search_image,
-            view_command=lambda: self.view_directory(self.filepath)
+            view_command=lambda: self.view_directory(self.file_path)
         )
 
         create_path_setting(
             row=1,
             label_text="Client Directory:",
-            path=self.targetpath,
+            path=self.target_path,
             path_id=TARGET_ID,
             image=search_image,
-            view_command=lambda: self.view_directory(self.targetpath)
+            view_command=lambda: self.view_directory(self.target_path)
         )
 
         create_path_setting(
             row=2,
             label_text="Browser:",
-            path=self.browserpath,
+            path=self.browser_path,
             path_id=BROWSER_ID,
             image=None
         )
@@ -149,19 +146,19 @@ class Settings(ctk.CTkFrame):
             return
 
         if pathID == FILES_ID:
-            if self.targetpath == path:
+            if self.target_path == path:
                 CTkMessagebox(title="Error", icon="warning",
                               message="Error: Scanned Files directory cannot be the same as Client directory! \nPlease choose a new path.")
             else:
-                self.filepath = path
+                self.file_path = path
         elif pathID == TARGET_ID:
-            if self.filepath == path:
+            if self.file_path == path:
                 CTkMessagebox(title="Error", icon="warning",
                               message="Error: Client directory cannot be the same as Scanned Files directory! \nPlease choose a new path.")
             else:
-                self.targetpath = path
+                self.target_path = path
         elif pathID == BROWSER_ID:
-            self.browserpath = path
+            self.browser_path = path
         self.pending_changes = True
         self.update()
 
@@ -169,20 +166,23 @@ class Settings(ctk.CTkFrame):
         pass
 
     def apply_changes(self):
-        if self.filepath != "":
-            self.controller.set_path(FILES_ID, self.filepath)
-        if self.targetpath != "":
-            self.controller.set_path(TARGET_ID, self.targetpath)
-        if self.browserpath != "":
-            self.controller.set_path(BROWSER_ID, self.browserpath)
+        if self.file_path != "":
+            logging.debug(f"setting files_path to {self.file_path}")
+            self.controller.set_path(FILES_ID, self.file_path)
+        if self.target_path != "":
+            logging.debug(f"setting target_path to {self.target_path}")
+            self.controller.set_path(TARGET_ID, self.target_path)
+        if self.browser_path != "":
+            logging.debug(f"setting browser_path to {self.browser_path}")
+            self.controller.set_path(BROWSER_ID, self.browser_path)
 
         self.controller.save_settings()
         self.pending_changes = False
         self.update()
 
     def cancel_changes(self):
-        self.filepath = self.controller.get_path(FILES_ID)
-        self.targetpath = self.controller.get_path(TARGET_ID)
-        self.browserpath = self.controller.get_path(BROWSER_ID)
+        self.file_path = self.controller.get_path(FILES_ID)
+        self.target_path = self.controller.get_path(TARGET_ID)
+        self.browser_path = self.controller.get_path(BROWSER_ID)
         self.pending_changes = False
         self.update()

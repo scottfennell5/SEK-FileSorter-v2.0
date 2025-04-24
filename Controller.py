@@ -12,8 +12,6 @@ class Controller:
     def __init__(self):
         logging.debug("Init Controller")
         self.dataHandler = DataHandler()
-        self.dataHandler.load_settings()
-        self.dataHandler.update()
         self.sorter = Sorter(file_path=self.dataHandler.get_file_path(),
                              target_path=self.dataHandler.get_target_path())
         self.observers = [self.dataHandler, self.sorter]
