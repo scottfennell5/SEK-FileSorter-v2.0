@@ -1,6 +1,4 @@
 import sys
-from typing import no_type_check_decorator
-
 import pandas as pd
 import yaml
 import os
@@ -77,7 +75,7 @@ class DataHandler:
             with open(self.olddata_path, 'r') as file:
                 self.files_df = pd.json_normalize(yaml.load(file, Loader=yaml.FullLoader))
         except NotImplementedError:
-            logging.warning("tried to read empty file, NotImplementedError")
+            logging.warning("tried to read empty data file")
 
     def filter_data(self):
         #Removes rows that correlate to files that no longer exist or cannot be found.
@@ -108,7 +106,7 @@ class DataHandler:
                     'Client_Type': ['unknown'],
                     'First_Name': ['unknown client'],
                     'Second_Name': [None],
-                    'Year': [None],
+                    'Year': [-1],
                     'File_Description': [None]
                 })
                 self.files_df = pd.concat([self.files_df, new_row], ignore_index=True)

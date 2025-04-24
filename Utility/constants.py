@@ -1,0 +1,14 @@
+FILE_NAME = 0
+STATUS = 1
+CLIENT_TYPE = 2
+CLIENT_NAME = 3
+CLIENT_NAME_2 = 4
+YEAR = 5
+DESCRIPTION = 6
+
+FILES_ID = "files"
+TARGET_ID = "target"
+BROWSER_ID = "browser"
+
+CLIENT = "Client"
+BUSINESS = "Business"

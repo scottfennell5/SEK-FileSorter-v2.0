@@ -59,11 +59,11 @@ class Home(ctk.CTkFrame):
             return
 
         #grabs the specified columns below, and
-        clients = list(zip(files['First_Name'], files['File_Status'], files['File_Name']))
+        clients = list(zip(files['File_Name'],files['File_Status'],files['First_Name']))
 
-        NAME=0
-        STATUS=1
-        FILE_NAME=2
+        FILE_NAME = 0
+        STATUS = 1
+        NAME = 2
 
         MAX_LENGTH = 30
 

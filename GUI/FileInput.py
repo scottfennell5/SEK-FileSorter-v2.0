@@ -1,20 +1,35 @@
+from Utility.constants import (
+    FILE_NAME, CLIENT_TYPE, CLIENT_NAME, CLIENT_NAME_2, YEAR, DESCRIPTION,
+    CLIENT, BUSINESS)
+
 import customtkinter as ctk
 import tkinter as tk
 
 class FileInput(ctk.CTkFrame):
-    FILE_NAME = 0
-    STATUS = 1
-    CLIENT_TYPE = 2
-    CLIENT_NAME = 3
-    CLIENT_NAME_2 = 4
-    YEAR = 5
-    DESCRIPTION = 6
+    CLIENT = "Client"
+    BUSINESS = "Business"
+
+    SAMPLE_DATA = {
+        CLIENT: {
+            "client1": "Bob Smith",
+            "client2": "Amanda Smith"
+        },
+        BUSINESS: {
+            "client1": "BUSINESS LLC",
+            "client2": "ANOTHER BUSINESS INC"
+        }
+    }
 
     def __init__(self, controller, file_data, master, **kwargs):
         super().__init__(master, **kwargs)
         self.controller = controller
         self.file_data_original = file_data
         self.file_data = file_data
+        self.entries = {
+            self.CLIENT: {},
+            self.BUSINESS: {}
+        }
+        self.status_label = None
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0,weight=0)
         self.grid_rowconfigure(1,weight=1)
@@ -35,7 +50,7 @@ class FileInput(ctk.CTkFrame):
     def populate_header(self):
         MAX_LENGTH = 15
 
-        file_name = self.file_data[self.FILE_NAME]
+        file_name = self.file_data[FILE_NAME]
         if len(file_name) > MAX_LENGTH:
             file_name = file_name[:MAX_LENGTH].rstrip() + "..."
         header_label = ctk.CTkLabel(self.header,text=file_name,
@@ -55,177 +70,125 @@ class FileInput(ctk.CTkFrame):
         open_file_button.pack(side=ctk.RIGHT, padx=4, pady=5)
 
     def populate_body(self):
-        tab_view = ctk.CTkTabview(self.body,fg_color="#1A1A1A", corner_radius=0)
-        tab_view.pack(fill="both",expand=True)
-        tab_client = tab_view.add("Client")
-        tab_business = tab_view.add("Business")
+        self.tab_view = ctk.CTkTabview(self.body,fg_color="#1A1A1A", corner_radius=0)
+        self.tab_view.pack(fill="both",expand=True)
+        tab_client = self.tab_view.add(CLIENT)
+        tab_business = self.tab_view.add(BUSINESS)
         try:
-            tab_view.set(self.file_data[self.CLIENT_TYPE])
+            self.tab_view.set(self.file_data[CLIENT_TYPE])
         except ValueError:
-            tab_view.set("Client")
+            self.tab_view.set(self.CLIENT)
 
-        self.populate_client(tab_client)
+        self.populate_tab(tab_client, self.CLIENT)
         tab_client.columnconfigure(1,weight=1)
         tab_client.columnconfigure(3, weight=1)
-        self.populate_business(tab_business)
+        self.populate_tab(tab_business, self.BUSINESS)
 
-    def populate_client(self, tab):
+    def create_labeled_entry(self, parent, label_text, placeholder):
+        """
+            Label_text: [placeholder   ]
+        """
+        row = ctk.CTkFrame(parent, fg_color="transparent")
+        row.pack(fill="x", pady=5)
+        label = ctk.CTkLabel(row, text=label_text, width=100, anchor="w")
+        label.pack(side="left")
+        entry = ctk.CTkEntry(row, placeholder_text=placeholder)
+        entry.pack(side="left", fill="x", expand=True, padx=(10, 0))
+        return entry
+
+    def populate_tab(self, tab, tab_type):
         container = ctk.CTkFrame(tab, fg_color="transparent")
         container.pack(fill="both", expand=True, padx=20, pady=20)
-
-        def create_labeled_entry(parent, label_text, placeholder):
-            """
-            Label_text: [placeholder   ]
-            """
-            row = ctk.CTkFrame(parent, fg_color="transparent")
-            row.pack(fill="x", pady=5)
-            label = ctk.CTkLabel(row, text=label_text, width=100, anchor="w")
-            label.pack(side="left")
-            entry = ctk.CTkEntry(row, placeholder_text=placeholder)
-            entry.pack(side="left", fill="x", expand=True, padx=(10, 0))
-            return entry
 
         client1_frame = ctk.CTkFrame(container, fg_color="transparent")
         client1_frame.grid(row=0, column=0, sticky="ew", padx=20, pady=10)
         client1_label = ctk.CTkLabel(client1_frame, text="Client 1", font=ctk.CTkFont(size=16, weight="bold"))
         client1_label.pack(anchor="w", pady=(0, 5))
-        client1_first_entry = create_labeled_entry(client1_frame, "First name:", "Bob")
-        client1_last_entry = create_labeled_entry(client1_frame, "Last name:", "Smith")
+        entry = self.create_labeled_entry(client1_frame, "Name:", self.SAMPLE_DATA[tab_type]["client1"])
+        self.entries[tab_type]["client1"] = entry
 
         radio_frame = ctk.CTkFrame(container, fg_color="transparent")
         radio_frame.grid(row=1, column=0, sticky="ew", padx=20, pady=10)
         radio_label = ctk.CTkLabel(radio_frame, text="Is there another client?", width=100, anchor="w")
         radio_label.pack(side="left")
         radio_var = tk.IntVar(value=0)
+        self.entries[tab_type]["radiovar"] = radio_var
 
         def radiobutton_event():
-            if radio_var.get() == 1:
+            if self.entries[tab_type]["radiovar"].get() == 1:
                 client2_frame.grid(row=2, column=0, sticky="ew", padx=20, pady=10)
             else:
                 client2_frame.grid_forget()
 
-        ctk.CTkRadioButton(radio_frame, text="Yes", variable=radio_var, value=1,
+        ctk.CTkRadioButton(radio_frame, text="Yes", variable=self.entries[tab_type]["radiovar"], value=1,
                            command=radiobutton_event).pack(side="left", padx=10)
-        ctk.CTkRadioButton(radio_frame, text="No", variable=radio_var, value=0,
-                           command=radiobutton_event).pack(side="left", padx=10)
-
-        client2_frame = ctk.CTkFrame(container, fg_color="transparent")
-        client2_label = ctk.CTkLabel(client2_frame, text="Client 2", font=ctk.CTkFont(size=16, weight="bold"))
-        client2_label.pack(anchor="w",pady=(0, 5))
-        client2_first_entry = create_labeled_entry(client2_frame, "First name:", "Amanda")
-        client2_last_entry = create_labeled_entry(client2_frame, "Last name:", "Smith")
-        radio_var.set(0)
-
-        misc_frame = ctk.CTkFrame(container, fg_color="transparent")
-        misc_frame.grid(row=3, column=0, sticky="ew", padx=20, pady=10)
-        year_entry = create_labeled_entry(misc_frame, "Year:", "1984")
-        file_desc_entry = create_labeled_entry(misc_frame, "File Description:", "Form 8879")
-
-        #fill already completed entry labels
-        client_type =   self.file_data[self.CLIENT_TYPE]
-        client1_name =  self.file_data[self.CLIENT_NAME]
-        client2_name =  self.file_data[self.CLIENT_NAME_2]
-        year = self.file_data[self.YEAR]
-        file_desc = self.file_data[self.DESCRIPTION]
-        if client1_name != "unknown client" and client_type == "client":
-            client1_first_entry.insert(0,client1_name.split(" ")[0])
-            client1_last_entry.insert(0, client1_name.split(" ")[1])
-
-        if client2_name is not None and client_type == "client":
-            client2_first_entry.insert(0,client2_name.split(" ")[0])
-            client2_last_entry.insert(0,client1_name.split(" ")[1])
-
-        if year is not None:
-            year_entry.insert(0,year)
-
-        if file_desc is not None:
-            file_desc_entry.insert(0,file_desc)
-
-    def populate_business(self,tab):
-        container = ctk.CTkFrame(tab, fg_color="transparent")
-        container.pack(fill="both", expand=True, padx=20, pady=20)
-
-        def create_labeled_entry(parent, label_text, placeholder):
-            """
-                Label_text: [placeholder   ]
-            """
-            row = ctk.CTkFrame(parent, fg_color="transparent")
-            row.pack(fill="x", pady=5)
-            label = ctk.CTkLabel(row, text=label_text, width=100, anchor="w")
-            label.pack(side="left")
-            entry = ctk.CTkEntry(row, placeholder_text=placeholder)
-            entry.pack(side="left", fill="x", expand=True, padx=(10, 0))
-            return entry
-
-        client1_frame = ctk.CTkFrame(container, fg_color="transparent")
-        client1_frame.grid(row=0, column=0, sticky="ew", padx=20, pady=10)
-        client1_label = ctk.CTkLabel(client1_frame, text="Business 1", font=ctk.CTkFont(size=16, weight="bold"))
-        client1_label.pack(anchor="w", pady=(0, 5))
-        client1_entry = create_labeled_entry(client1_frame, "Business 1:", "Business LLC")
-
-        radio_frame = ctk.CTkFrame(container, fg_color="transparent")
-        radio_frame.grid(row=1, column=0, sticky="ew", padx=20, pady=10)
-        radio_label = ctk.CTkLabel(radio_frame, text="Is there another business?", width=100, anchor="w")
-        radio_label.pack(side="left")
-        radio_var = tk.IntVar(value=0)
-
-        def radiobutton_event():
-            if radio_var.get() == 1:
-                client2_frame.grid(row=2, column=0, sticky="ew", padx=20, pady=10)
-            else:
-                client2_frame.grid_forget()
-
-        ctk.CTkRadioButton(radio_frame, text="Yes", variable=radio_var, value=1,
-                           command=radiobutton_event).pack(side="left", padx=10)
-        ctk.CTkRadioButton(radio_frame, text="No", variable=radio_var, value=0,
+        ctk.CTkRadioButton(radio_frame, text="No", variable=self.entries[tab_type]["radiovar"], value=0,
                            command=radiobutton_event).pack(side="left", padx=10)
 
         client2_frame = ctk.CTkFrame(container, fg_color="transparent")
         client2_label = ctk.CTkLabel(client2_frame, text="Client 2", font=ctk.CTkFont(size=16, weight="bold"))
         client2_label.pack(anchor="w", pady=(0, 5))
-        client2_entry = create_labeled_entry(client2_frame, "Business 2:", "Another Business INC")
-        radio_var.set(0)
+        entry = self.create_labeled_entry(client2_frame, "Name:", self.SAMPLE_DATA[tab_type]["client2"])
+        self.entries[tab_type]["client2"] = entry
 
         misc_frame = ctk.CTkFrame(container, fg_color="transparent")
         misc_frame.grid(row=3, column=0, sticky="ew", padx=20, pady=10)
-        year_entry = create_labeled_entry(misc_frame, "Year:", "1984")
-        file_desc_entry = create_labeled_entry(misc_frame, "File Description:", "Form 8879")
+        entry = self.create_labeled_entry(misc_frame, "Year:", "1984")
+        self.entries[tab_type]["year"] = entry
+        entry = self.create_labeled_entry(misc_frame, "File Description:", "Form 8879")
+        self.entries[tab_type]["file_desc"] = entry
 
         # fill already completed entry labels
-        client_type = self.file_data[self.CLIENT_TYPE]
-        client1_name = self.file_data[self.CLIENT_NAME]
-        client2_name = self.file_data[self.CLIENT_NAME_2]
-        year = self.file_data[self.YEAR]
-        file_desc = self.file_data[self.DESCRIPTION]
-        print(client1_name)
-        print(client2_name)
-        print(client1_name != "unknown client" and client_type == "business")
-        print(client2_name is not None and client_type == "business")
-        if client1_name != "unknown client" and client_type == "business":
-            client1_entry.insert(0, client1_name)
+        client1_name = self.file_data[CLIENT_NAME]
+        client2_name = self.file_data[CLIENT_NAME_2]
+        year = self.file_data[YEAR]
+        file_desc = self.file_data[DESCRIPTION]
 
-        if client2_name is not None and client_type == "business":
-            client2_entry.insert(0, client2_name)
+        if client1_name != "unknown client":
+            self.entries[tab_type]["client1"].insert(0, client1_name)
 
-        if year is not None:
-            year_entry.insert(0, year)
+        if client2_name is not None:
+            self.entries[tab_type]["client2"].insert(0, client2_name)
+            self.entries[tab_type]["radiovar"].set(1)
+        else:
+            self.entries[tab_type]["radiovar"].set(0)
+        radiobutton_event()
+
+        if year != -1:
+            self.entries[tab_type]["year"].insert(0, year)
 
         if file_desc is not None:
-            file_desc_entry.insert(0, file_desc)
+            self.entries[tab_type]["file_desc"].insert(0, file_desc)
 
     def populate_footer(self):
         close_button = ctk.CTkButton(self.footer, text="Save Changes", width=125,
                                      fg_color="#C3B1E1", text_color="black", hover_color="#CCCCFF",
-                                     command=lambda: self.save_changes())
+                                     command=lambda: self.save_changes(self.tab_view.get()))
 
         close_button.pack(side=ctk.RIGHT, padx=4, pady=5)
 
-    def save_changes(self):
-        #TODO
-        #verify integrity of data
-        #if passed, save and pass row changes to controller
-        #if not, display error message with what needs fixed
-        pass
+    def save_changes(self, tab_type):
+        self.file_data = [
+            self.file_data_original[FILE_NAME], #file name
+            self.tab_view.get(), #client type
+            self.entries[tab_type]["client1"].get(),
+            self.entries[tab_type]["client2"].get(),
+            self.entries[tab_type]["year"].get(),
+            self.entries[tab_type]["file_desc"].get()
+        ]
+        needs_fixed = self.controller.save_row_changes(self.tab_view.get(), self.file_data)
+        if self.status_label:
+            self.status_label.destroy()
+        if not needs_fixed:
+            self.status_label = ctk.CTkLabel(self.footer,
+                                             text=f"*Data is valid and has been saved.\nYou can safely close this window.",
+                                             text_color="#90EE90")
+            self.status_label.pack(side=ctk.LEFT)
+        else:
+            self.status_label = ctk.CTkLabel(self.footer,
+                                              text=f"*The following fields are empty or incorrect:\n{needs_fixed}",
+                                              text_color="#FFD7D7")
+            self.status_label.pack(side=ctk.LEFT)
 
     def open_file(self,file_name):
         self.controller.open_file(file_name)

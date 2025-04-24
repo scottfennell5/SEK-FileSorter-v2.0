@@ -7,8 +7,7 @@ import os
 import sys
 import yaml
 
-if __name__ == '__main__':
-
+def start_logs():
     base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
     settings_path = os.path.join(base_path, "PersistentData\Data\settings.yaml")
     with open(settings_path, 'r') as file:
@@ -22,6 +21,12 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG, filename=log_file, filemode="w",
                         format="%(asctime)s - %(levelname)s - %(filename)s:%(lineno)d - %(funcName)s() - %(message)s")
 
+if __name__ == '__main__':
+    create_logs = False
+
+    if create_logs:
+        start_logs()
+
     controller = Controller()
 
     program = FileSorter(controller)
@@ -31,4 +36,4 @@ if __name__ == '__main__':
     except KeyboardInterrupt as e:
         logging.warning(f"Keyboard interrupt: {e}")
     except Exception as e:
-        logging.fatal(f"FATAL ERROR: {e}", exc_info=True)
+        logging.fatal(f"Fatal Error: {e}\nProgram terminated.", exc_info=True)

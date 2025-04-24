@@ -3,18 +3,18 @@
   Client_Type: unknown
   First_Name: unknown client
   Second_Name: null
-  Year: 1984
-  File_Description: unknown
+  Year: -1
+  File_Description: null
 - File_Name: file2.pdf
   File_Status: true
-  Client_Type: client
+  Client_Type: Client
   First_Name: Adam Sandler
   Second_Name: John Destiny
   Year: 2008
   File_Description: Form Example
 - File_Name: file5_andareallylongname.pdf
   File_Status: true
-  Client_Type: business
+  Client_Type: Business
   First_Name: REEEEEEEEALLY LONG BUSINESS LLC
   Second_Name: ANOTHER REAL BUSINESS INC
   Year: 2001
