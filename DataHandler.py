@@ -14,6 +14,17 @@ class DataHandler:
                   'Year':pd.Series(dtype=int),
                   'File_Description':pd.Series(dtype="string")}
 
+    """
+    Defaults:
+    'File_Name': [file],
+    'File_Status': [False]
+    'Client_Type': ['unknown']
+    'First_Name': ['unknown client']
+    'Second_Name': [None]
+    'Year': [-1]
+    'File_Description': [None]
+    """
+
     def __init__(self):
         logging.debug("Init Datahandler")
         self.files_df = pd.DataFrame(self.files_dict)

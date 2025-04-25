@@ -8,7 +8,7 @@ class Menu(ctk.CTkFrame):
 
         buttons = [
             ("Home", lambda : master.set_window("home")),
-            ("Search", lambda : master.set_window("search")),
+            #("Search", lambda : master.set_window("search")),
             ("Settings", lambda : master.set_window("settings")),
             ("Help", lambda : master.set_window("help"))
         ]

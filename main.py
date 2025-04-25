@@ -22,7 +22,7 @@ def start_logs():
                         format="%(asctime)s - %(levelname)s - %(filename)s:%(lineno)d - %(funcName)s() - %(message)s")
 
 if __name__ == '__main__':
-    create_logs = True
+    create_logs = False
 
     if create_logs:
         start_logs()

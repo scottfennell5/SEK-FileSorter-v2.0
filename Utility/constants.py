@@ -12,3 +12,7 @@ BROWSER_ID = "browser"
 
 CLIENT = "Client"
 BUSINESS = "Business"
+
+VALID_NAME_CLIENT = r"[A-Z][a-z]* [A-Z][a-z]*"
+VALID_NAME_BUSINESS = r"([A-Z]+ )+(LLC|INC)"
+VALID_YEAR = r"\d{4}"

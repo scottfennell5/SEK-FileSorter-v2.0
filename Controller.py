@@ -2,7 +2,8 @@ from Sorter import Sorter
 from DataHandler import DataHandler
 from Utility.constants import (
     FILE_NAME, STATUS, CLIENT_TYPE, CLIENT_NAME, CLIENT_NAME_2, YEAR, DESCRIPTION,
-    FILES_ID, TARGET_ID, BROWSER_ID)
+    FILES_ID, TARGET_ID, BROWSER_ID,
+    CLIENT, BUSINESS, VALID_NAME_CLIENT, VALID_NAME_BUSINESS, VALID_YEAR)
 
 import logging
 import re
@@ -83,94 +84,44 @@ class Controller:
     def get_base_directory(self):
         return self.dataHandler.get_base_directory()
 
-    def save_row_changes(self, tab_type, file_data):
-        """
-        VALID_NAME_CLIENT = r"[A-Z][a-z]*"
-        VALID_NAME_BUSINESS = r"([A-Z]+ )+(LLC|INC)"
-        VALID_YEAR = r"\d{4}"
-
+    def save_row_changes(self, file_data, radio_value):
+        logging.debug(f"row changes submitted for {file_data[FILE_NAME]}, validating...\n Row changes: {file_data}")
         needs_fixed = []
-        def save_client():
-            client1_first_name = self.client1_first_entry.get()
-            valid_first_name = re.match(self.VALID_NAME_CLIENT, client1_first_name)
-            client1_last_name = self.client1_last_entry.get()
-            valid_last_name = re.match(self.VALID_NAME_CLIENT, client1_last_name)
-            if valid_first_name and valid_last_name:
-                client1_full_name = client1_first_name + " " + client1_last_name
-                self.file_data[self.CLIENT_NAME] = client1_full_name
-            else:
-                needs_fixed.append("Client 1")
+        type = file_data[CLIENT_TYPE]
+        name = file_data[CLIENT_NAME]
+        name2 = file_data[CLIENT_NAME_2]
+        year = file_data[YEAR]
+        desc = file_data[DESCRIPTION]
 
-            has_client2 = self.client_radio_var.get() == 1
-            if has_client2:
-                client2_first_name = self.client2_first_entry.get()
-                valid_first_name = re.match(self.VALID_NAME_CLIENT, client2_first_name)
-                client2_last_name = self.client2_last_entry.get()
-                valid_last_name = re.match(self.VALID_NAME_CLIENT, client2_last_name)
-
-                if valid_first_name and valid_last_name:
-                    client2_full_name = client2_first_name + " " + client2_last_name
-                    self.file_data[self.CLIENT_NAME_2] = client2_full_name
-                else:
-                    needs_fixed.append("Client 2")
-
-            year = self.client_year_entry.get()
-            valid_year = re.match(self.VALID_YEAR,year)
-            if valid_year:
-                self.file_data[self.YEAR] = int(year)
-            else:
-                needs_fixed.append("Year")
-
-            file_desc = self.client_file_desc_entry.get()
-            valid_desc = file_desc != ""
-            if valid_desc:
-                self.file_data[self.DESCRIPTION] = file_desc
-            else:
-                needs_fixed.append("File Description")
-
-            if len(needs_fixed) > 0:
-                return needs_fixed
-            else:
-                print(f"og:{self.file_data_original}")
-                print(f"new:{self.file_data}")
-
-        def save_business():
-            client1_name = self.client1_entry.get()
-            valid_name = re.match(self.VALID_NAME_BUSINESS, client1_name)
-            if valid_name:
-                self.file_data[self.CLIENT_NAME] = client1_name
-            else:
-                needs_fixed.append("Client 1")
-
-            has_client2 = self.business_radio_var.get() == 1
-            if has_client2:
-                client2_name = self.client2_entry.get()
-                valid_name = re.match(self.VALID_NAME_BUSINESS, client2_name)
-
-                if valid_name:
-                    self.file_data[self.CLIENT_NAME_2] = client2_name
-                else:
-                    needs_fixed.append("Client 2")
-
-            year = self.business_year_entry.get()
-            valid_year = re.match(self.VALID_YEAR, year)
-            if valid_year:
-                self.file_data[self.YEAR] = int(year)
-            else:
-                needs_fixed.append("Year")
-
-            file_desc = self.business_file_desc_entry.get()
-            valid_desc = file_desc != ""
-            if valid_desc:
-                self.file_data[self.DESCRIPTION] = file_desc
-            else:
-                needs_fixed.append("File Description")
-
-        if self.tab_view.get() == "Client":
-            save_client()
+        if type == CLIENT:
+            valid_name = re.fullmatch(VALID_NAME_CLIENT, name)
+            valid_name2 = re.fullmatch(VALID_NAME_CLIENT, name2)
         else:
-            save_business()
-        """
+            valid_name = re.fullmatch(VALID_NAME_BUSINESS, name)
+            valid_name2 = re.fullmatch(VALID_NAME_BUSINESS, name2)
+
+        if valid_name is None:
+            needs_fixed.append("Client 1")
+
+        client2_exists = radio_value == 1
+        if  client2_exists and valid_name2 is None:
+            needs_fixed.append("Client 2")
+        elif not client2_exists:
+            file_data[CLIENT_NAME_2] = ""
+
+        valid_year = re.fullmatch(VALID_YEAR, year)
+        if not valid_year:
+            needs_fixed.append("Year")
+
+        valid_desc = desc != ""
+        if not valid_desc:
+            needs_fixed.append("Description")
+
+        data_valid = not len(needs_fixed) > 0
+        if data_valid:
+            logging.debug(f"data passed validation!")
+        logging.debug(f"needs_fixed: {needs_fixed}")
+        return needs_fixed
 
     #temp functions
     def save_data(self):

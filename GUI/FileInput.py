@@ -1,5 +1,5 @@
 from Utility.constants import (
-    FILE_NAME, CLIENT_TYPE, CLIENT_NAME, CLIENT_NAME_2, YEAR, DESCRIPTION,
+    FILE_NAME, STATUS, CLIENT_TYPE, CLIENT_NAME, CLIENT_NAME_2, YEAR, DESCRIPTION,
     CLIENT, BUSINESS)
 
 import customtkinter as ctk
@@ -169,14 +169,15 @@ class FileInput(ctk.CTkFrame):
 
     def save_changes(self, tab_type):
         self.file_data = [
-            self.file_data_original[FILE_NAME], #file name
-            self.tab_view.get(), #client type
+            self.file_data_original[FILE_NAME],
+            self.file_data_original[STATUS],
+            self.tab_view.get(),
             self.entries[tab_type]["client1"].get(),
             self.entries[tab_type]["client2"].get(),
             self.entries[tab_type]["year"].get(),
             self.entries[tab_type]["file_desc"].get()
         ]
-        needs_fixed = self.controller.save_row_changes(self.tab_view.get(), self.file_data)
+        needs_fixed = self.controller.save_row_changes(self.file_data, self.entries[tab_type]["radiovar"].get())
         if self.status_label:
             self.status_label.destroy()
         if not needs_fixed:

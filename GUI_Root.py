@@ -54,8 +54,8 @@ class FileSorter(ctk.CTk):
         match window:
             case "home":
                 frame = Home(self.controller, self.mainFrame, **WINDOW_STYLE)
-            case "search":
-                frame = Search(self.controller, self.mainFrame, **WINDOW_STYLE)
+            #case "search":
+            #    frame = Search(self.controller, self.mainFrame, **WINDOW_STYLE)
             case "settings":
                 frame = Settings(self.controller, self.mainFrame, **WINDOW_STYLE)
             case "help":
