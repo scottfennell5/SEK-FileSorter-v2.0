@@ -1,10 +1,20 @@
-FILE_NAME = 0
-STATUS = 1
-CLIENT_TYPE = 2
-CLIENT_NAME = 3
-CLIENT_NAME_2 = 4
-YEAR = 5
-DESCRIPTION = 6
+FILE_NAME = 'File_Name'
+STATUS = 'File_Status'
+CLIENT_TYPE = 'Client_Type'
+CLIENT_NAME = 'Client_Name'
+CLIENT_NAME_2 = 'Client_Name_2'
+YEAR = 'Year'
+DESCRIPTION = 'File_Description'
+
+DEFAULT_VALUES = {
+    FILE_NAME: "",
+    STATUS: False,
+    CLIENT_TYPE: 'unknown',
+    CLIENT_NAME: 'unknown client',
+    CLIENT_NAME_2: None,
+    YEAR: -1,
+    DESCRIPTION: None
+}
 
 FILES_ID = "files"
 TARGET_ID = "target"

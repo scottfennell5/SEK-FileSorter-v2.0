@@ -1,12 +1,12 @@
-from Utility import ToolTip as ttp
-from Utility.constants import FILES_ID, TARGET_ID, BROWSER_ID
-
 from tkinter import filedialog
 import customtkinter as ctk
 import os
 from PIL import Image
 from CTkMessagebox import CTkMessagebox
 import logging
+
+from Utility import ToolTip as ttp
+from Utility.constants import FILES_ID, TARGET_ID, BROWSER_ID
 
 IMG_HEIGHT = 30
 IMG_WIDTH = 30

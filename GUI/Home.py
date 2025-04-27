@@ -1,9 +1,9 @@
 import customtkinter as ctk
-import tkinter as tk
 from functools import partial
 import logging
 
 from GUI.FileInput import FileInput
+from Utility.constants import FILE_NAME, STATUS, CLIENT_NAME
 
 class Home(ctk.CTkFrame):
     def __init__(self, controller, master, **kwargs):
@@ -36,7 +36,7 @@ class Home(ctk.CTkFrame):
 
         sort_button = ctk.CTkButton(button_frame, text="Sort", width=125,
                                     fg_color="#1E1E1E", text_color="#BB86FC", hover_color="#2E2E2E",
-                                    command=lambda: print("sorting"))
+                                    command=lambda: self.sort())
         sort_button.pack(side=ctk.RIGHT, padx=4)
         col += 1
 
@@ -51,19 +51,14 @@ class Home(ctk.CTkFrame):
             widget.destroy()
 
         files = self.controller.get_data_copy()
-        logging.debug(f"files:{files}")
-        print(f"files:{files}")
+        logging.debug(f"files:\n{files.to_string()}")
         if files.empty or files is None:
             label = ctk.CTkLabel(self.scrollable, text="No files detected! \n\n\nIf you expected files here, \nmake sure the Client Directory path in 'Settings' is correct.")
             label.grid(row=0,column=0,padx=8,pady=5,sticky='new')
             return
 
         #grabs the specified columns below, and
-        clients = list(zip(files['File_Name'],files['File_Status'],files['First_Name']))
-
-        FILE_NAME = 0
-        STATUS = 1
-        NAME = 2
+        clients = list(zip(files[FILE_NAME],files[STATUS],files[CLIENT_NAME]))
 
         MAX_LENGTH = 30
 
@@ -81,8 +76,8 @@ class Home(ctk.CTkFrame):
 
         row = 0
         for client in clients:
-
-            client_name = client[NAME]
+            #client = (file_name, status, client_name)
+            client_name = client[2]
             if len(client_name) > MAX_LENGTH:
                 client_name = client_name[:MAX_LENGTH].rstrip() + "..."
             client_label = ctk.CTkLabel(self.scrollable,text=client_name,corner_radius=0,width=75,
@@ -90,19 +85,19 @@ class Home(ctk.CTkFrame):
                                   justify="left",anchor="w")
             client_label.grid(row=row+1,column=0,padx=(8,0),pady=5,sticky='w')
 
-            style = STATUS_COMPLETE_STYLE if client[STATUS] else STATUS_INCOMPLETE_STYLE
+            style = STATUS_COMPLETE_STYLE if client[1] else STATUS_INCOMPLETE_STYLE
             status_label = ctk.CTkLabel(self.scrollable, **style,corner_radius=5, width=50,justify="left", anchor="w")
             status_label.grid(row=row+1, column=1, pady=5, sticky='w')
 
             open_button = ctk.CTkButton(self.scrollable, text="Open File", width=125,
                                         fg_color="#2C2C2C", text_color="#BB86FC", hover_color="#2E2E2E",
-                                        command=partial(self.open_file, self.controller.get_row(client[FILE_NAME])))
+                                        command=partial(self.open_file, self.controller.get_row(client[0])))
             open_button.grid(row=row+1,column=2,pady=5,sticky='w')
 
             row += 1
 
-    def open_file(self, file_name):
-        inputOverlay = FileInput(self.controller, file_name, self, fg_color="#1E1E1E", corner_radius=5)
+    def open_file(self, file_data):
+        inputOverlay = FileInput(self.controller, file_data, self, fg_color="#1E1E1E", corner_radius=5)
 
         start_y = 1.0
         target_y = 0.0
@@ -143,7 +138,12 @@ class Home(ctk.CTkFrame):
                 widget.destroy()
 
         animate()
+        self.update()
 
     def update(self):
         logging.debug("Refreshing the UI with updated data.")
         self.populate_table()
+
+    def sort(self):
+        self.controller.sort_files()
+        self.update()

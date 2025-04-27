@@ -1,11 +1,11 @@
-from Controller import Controller
-from GUI_Root import FileSorter
-
 from datetime import datetime
 import logging
 import os
 import sys
 import yaml
+
+from Controller import Controller
+from GUI_Root import FileSorter
 
 def start_logs():
     base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
@@ -19,10 +19,10 @@ def start_logs():
     log_file = os.path.join(log_path, log_name)
 
     logging.basicConfig(level=logging.DEBUG, filename=log_file, filemode="w",
-                        format="%(asctime)s - %(levelname)s - %(filename)s:%(lineno)d - %(funcName)s() - %(message)s")
+                        format=">>[%(asctime)s] [%(levelname)s] [%(filename)s - %(lineno)d - %(funcName)s()]: %(message)s")
 
 if __name__ == '__main__':
-    create_logs = False
+    create_logs = True
 
     if create_logs:
         start_logs()

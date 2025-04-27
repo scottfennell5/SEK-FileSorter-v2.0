@@ -1,7 +1,7 @@
-from Utility.constants import FILE_NAME, STATUS, CLIENT_TYPE, CLIENT_NAME, CLIENT_NAME_2, YEAR, DESCRIPTION
-
 import logging
 import yaml
+
+from Utility.constants import FILE_NAME, STATUS, CLIENT_TYPE, CLIENT_NAME, CLIENT_NAME_2, YEAR, DESCRIPTION
 
 class Sorter:
     def __init__(self, file_path, target_path):
@@ -27,6 +27,6 @@ class Sorter:
     def update(self):
         logging.debug("sorter updated (this function does nothing :P)")
 
-    def sort_file(self, file_info):
-        #file_info = [file name, status, client type, client name, 2nd client name (or None), year, description]
+    def sort_file(self, files):
+        print(files)
         pass

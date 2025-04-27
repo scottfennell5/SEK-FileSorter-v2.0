@@ -1,29 +1,26 @@
 import sys
 import pandas as pd
+import duckdb as ddb
 import yaml
 import os
 import logging
 
+from yaml.scanner import ScannerError
+from yaml.parser import ParserError
+
+from Utility.constants import (
+    FILE_NAME, STATUS, CLIENT_TYPE, CLIENT_NAME, CLIENT_NAME_2, YEAR, DESCRIPTION,
+    DEFAULT_VALUES)
+
 class DataHandler:
 
-    files_dict = {'File_Name':pd.Series(dtype="string"),
-                  'File_Status':pd.Series(dtype=bool),
-                  'Client_Type':pd.Series(dtype="string"),
-                  'First_Name':pd.Series(dtype="string"),
-                  'Second_Name':pd.Series(dtype="string"),
-                  'Year':pd.Series(dtype=int),
-                  'File_Description':pd.Series(dtype="string")}
-
-    """
-    Defaults:
-    'File_Name': [file],
-    'File_Status': [False]
-    'Client_Type': ['unknown']
-    'First_Name': ['unknown client']
-    'Second_Name': [None]
-    'Year': [-1]
-    'File_Description': [None]
-    """
+    files_dict = {FILE_NAME:pd.Series(dtype="string"),
+                  STATUS:pd.Series(dtype=bool),
+                  CLIENT_TYPE:pd.Series(dtype="string"),
+                  CLIENT_NAME:pd.Series(dtype="string"),
+                  CLIENT_NAME_2:pd.Series(dtype="string"),
+                  YEAR:pd.Series(dtype=int),
+                  DESCRIPTION:pd.Series(dtype="string")}
 
     def __init__(self):
         logging.debug("Init Datahandler")
@@ -37,12 +34,13 @@ class DataHandler:
         self.update()
 
     def get_data_copy(self):
+        logging.debug(f"returning copy of df:\n{self.files_df}")
         return self.files_df.copy()
 
     def open_file(self,file_name):
         if self.file_path == "":
             logging.warning("File path undefined! cant open file")
-        if file_name.isin(os.listdir(self.file_path)):
+        if file_name in os.listdir(self.file_path):
             #open file
             pass
         else:
@@ -61,8 +59,6 @@ class DataHandler:
             }
             with open(self.settings_path, 'w') as file:
                 yaml.dump(settings, file, default_flow_style=False)
-
-            self.load_settings()
 
         def get_valid_path(key):
             path = settings.get(key)
@@ -97,17 +93,29 @@ class DataHandler:
                       sort_keys=False)
 
     def load_data_instance(self):
+        """
+        Attempts to read olddata.yaml into a dataframe
+        In the event that something goes wrong (file is missing, empty, corrupted, etc.)
+        a blank olddata.yaml is created or overwritten in PersistentData/Data.
+        """
         try:
             with open(self.olddata_path, 'r') as file:
                 self.files_df = pd.json_normalize(yaml.load(file, Loader=yaml.FullLoader))
+                return
         except NotImplementedError:
             logging.warning("tried to read empty data file")
-            self.files_df = pd.DataFrame(self.files_dict)
         except FileNotFoundError:
-            logging.warning("olddata.yaml does not exist, creating new file")
-            with open(self.olddata_path, 'w') as file:
-                pass
-            self.files_df = pd.DataFrame(self.files_dict)
+            logging.warning("olddata.yaml does not exist")
+        except Exception as e:
+            logging.warning(f"unexpected error occurred while loading data: {e}")
+
+        self.files_df = pd.DataFrame(self.files_dict)
+        with open(self.olddata_path, 'w') as file:
+            yaml.dump(self.files_df.to_dict(orient="records"),
+                      stream=file,
+                      default_flow_style=False,
+                      sort_keys=False)
+        logging.info("created new empty olddata.yaml")
 
     def filter_data(self):
         #Removes rows that correlate to files that no longer exist or cannot be found.
@@ -117,8 +125,16 @@ class DataHandler:
             self.files_df = pd.DataFrame(self.files_dict)
             return
 
-        actual_files = set(os.listdir(self.file_path))
-        self.files_df = (self.files_df[self.files_df["File_Name"].isin(actual_files)].reset_index(drop=True))
+        actual_files = list(os.listdir(self.file_path))
+        if actual_files and not self.files_df.empty:
+            con = ddb.connect()
+            con.register("df", self.files_df)
+            self.files_df = con.sql(
+                query=f"SELECT * FROM df WHERE {FILE_NAME} IN ?",
+                params=[actual_files]
+            ).df()
+        else:
+            self.files_df = pd.DataFrame(self.files_dict)
 
     def scan_files(self):
         logging.debug(f"Checking if path exists: {self.file_path} -> {os.path.exists(self.file_path)}")
@@ -134,14 +150,15 @@ class DataHandler:
             if duplicate_file or not_pdf:
                 pass
             else:
+                logging.debug(f"new file found {file}, adding with filler data...")
                 new_row = pd.DataFrame({
                     'File_Name': [file],
-                    'File_Status': [False],
-                    'Client_Type': ['unknown'],
-                    'First_Name': ['unknown client'],
-                    'Second_Name': [None],
-                    'Year': [-1],
-                    'File_Description': [None]
+                    'File_Status': DEFAULT_VALUES[STATUS],
+                    'Client_Type': DEFAULT_VALUES[CLIENT_TYPE],
+                    'Client_Name': DEFAULT_VALUES[CLIENT_NAME],
+                    'Client_Name_2': DEFAULT_VALUES[CLIENT_NAME_2],
+                    'Year': DEFAULT_VALUES[YEAR],
+                    'File_Description': DEFAULT_VALUES[DESCRIPTION]
                 })
                 self.files_df = pd.concat([self.files_df, new_row], ignore_index=True)
 
@@ -185,12 +202,36 @@ class DataHandler:
         return os.path.join(base_path, relative_path)
 
     def get_row(self, file_name):
-        row = self.files_df[self.files_df["File_Name"]==file_name]
-        logging.debug(f"returning row: {row}")
+        con = ddb.connect()
+        con.register("df", self.files_df)
+        row = con.sql(
+            query=f"SELECT * FROM df WHERE {FILE_NAME} = ?",
+            params=[file_name]
+        ).df()
+
+        logging.debug(f"returning row:\n{row}")
         if not row.empty:
-            #returns the row as a list, lambda casts the entire row into pure Python types (to avoid NumPy issues)
-            return row.iloc[0].apply(lambda x: x.item() if hasattr(x, 'item') else x).tolist()
+            return row.iloc[0].apply(lambda x: x.item() if hasattr(x, 'item') else x).to_dict() #cast to pure Python types
         return None
 
+    def update_row(self, file_data):
+        logging.debug(f"updating row {file_data[FILE_NAME]}...")
+
+        matching = self.files_df.loc[self.files_df[FILE_NAME] == file_data[FILE_NAME]]
+        if matching.empty:
+            logging.warning(f"no matching row to update: {file_data[FILE_NAME]}")
+            return
+        row_index = matching.index[0]
+
+        self.files_df.loc[row_index, STATUS] = file_data[STATUS]
+        self.files_df.loc[row_index, CLIENT_TYPE] = file_data[CLIENT_TYPE]
+        self.files_df.loc[row_index, CLIENT_NAME] = file_data[CLIENT_NAME]
+        self.files_df.loc[row_index, CLIENT_NAME_2] = file_data[CLIENT_NAME_2]
+        self.files_df.loc[row_index, YEAR] = int(file_data[YEAR])
+        self.files_df.loc[row_index, DESCRIPTION] = file_data[DESCRIPTION]
+
+        logging.debug(f"New dataframe: {self.files_df.to_string()}")
+        self.save_data_instance()
+
     def remove_row(self, file_name):
-        pass #remove row from dataframe, if it has been sorted
+        pass

@@ -1,12 +1,13 @@
+import logging
+import re
+import duckdb as ddb
+
 from Sorter import Sorter
 from DataHandler import DataHandler
 from Utility.constants import (
     FILE_NAME, STATUS, CLIENT_TYPE, CLIENT_NAME, CLIENT_NAME_2, YEAR, DESCRIPTION,
     FILES_ID, TARGET_ID, BROWSER_ID,
-    CLIENT, BUSINESS, VALID_NAME_CLIENT, VALID_NAME_BUSINESS, VALID_YEAR)
-
-import logging
-import re
+    CLIENT, BUSINESS, VALID_NAME_CLIENT, VALID_NAME_BUSINESS, VALID_YEAR, DEFAULT_VALUES)
 
 class Controller:
 
@@ -55,7 +56,7 @@ class Controller:
             case _ if pathID == BROWSER_ID:
                 path = self.dataHandler.get_browser_path()
             case _:
-                logging.exception(f"pathID invalid:{pathID}")
+                logging.error(f"pathID invalid:{pathID}")
                 raise ValueError("Invalid pathID passed into controller.get_path()")
 
         if path is None:
@@ -85,43 +86,65 @@ class Controller:
         return self.dataHandler.get_base_directory()
 
     def save_row_changes(self, file_data, radio_value):
-        logging.debug(f"row changes submitted for {file_data[FILE_NAME]}, validating...\n Row changes: {file_data}")
-        needs_fixed = []
-        type = file_data[CLIENT_TYPE]
+        logging.debug(f"row changes submitted for {file_data[FILE_NAME]}, validating...")
+
+        valid_data, errors = self.clean_and_validate_row(file_data, radio_value)
+
+        if not errors:
+            logging.debug(f"data passed validation!")
+        else:
+            logging.debug(f"errors: {errors}")
+        self.dataHandler.update_row(valid_data)
+        return errors
+
+    def clean_and_validate_row(self, file_data, client2):
+        logging.debug(f"validating row: {file_data}")
+        errors = []
+        cleaned_data = DEFAULT_VALUES.copy()
+        cleaned_data[FILE_NAME] = file_data[FILE_NAME]
+        cleaned_data[CLIENT_TYPE] = file_data[CLIENT_TYPE]
+
+        name_validators = {
+            CLIENT: VALID_NAME_CLIENT,
+            BUSINESS: VALID_NAME_BUSINESS
+        }
+        validator = name_validators[cleaned_data[CLIENT_TYPE]]
+
         name = file_data[CLIENT_NAME]
         name2 = file_data[CLIENT_NAME_2]
-        year = file_data[YEAR]
-        desc = file_data[DESCRIPTION]
 
-        if type == CLIENT:
-            valid_name = re.fullmatch(VALID_NAME_CLIENT, name)
-            valid_name2 = re.fullmatch(VALID_NAME_CLIENT, name2)
+        if re.fullmatch(validator, name):
+            cleaned_data[CLIENT_NAME] = name
         else:
-            valid_name = re.fullmatch(VALID_NAME_BUSINESS, name)
-            valid_name2 = re.fullmatch(VALID_NAME_BUSINESS, name2)
+            errors.append("Client 1")
 
-        if valid_name is None:
-            needs_fixed.append("Client 1")
+        client2_exists = client2 == 1
+        if client2_exists:
+            if re.fullmatch(validator, name2):
+                cleaned_data[CLIENT_NAME_2] = name2
+            else:
+                errors.append("Client 2")
 
-        client2_exists = radio_value == 1
-        if  client2_exists and valid_name2 is None:
-            needs_fixed.append("Client 2")
-        elif not client2_exists:
-            file_data[CLIENT_NAME_2] = ""
+        year = file_data[YEAR]
+        if re.fullmatch(VALID_YEAR, year):
+            cleaned_data[YEAR] = year
+        else:
+            errors.append("Year")
 
-        valid_year = re.fullmatch(VALID_YEAR, year)
-        if not valid_year:
-            needs_fixed.append("Year")
+        desc = file_data[DESCRIPTION].strip()
+        if desc != "":
+            cleaned_data[DESCRIPTION] = desc
+        else:
+            errors.append("Description")
 
-        valid_desc = desc != ""
-        if not valid_desc:
-            needs_fixed.append("Description")
+        cleaned_data[STATUS] = not errors
+        return cleaned_data, errors
 
-        data_valid = not len(needs_fixed) > 0
-        if data_valid:
-            logging.debug(f"data passed validation!")
-        logging.debug(f"needs_fixed: {needs_fixed}")
-        return needs_fixed
+    def sort_files(self):
+        data_copy = self.dataHandler.get_data_copy()
+        files_ready = ddb.query(f"SELECT * FROM data_copy WHERE {STATUS}==True").df()
+        logging.debug(f"The following files are ready for sorting:\n{files_ready.to_string()}")
+        self.sorter.sort_file(files_ready)
 
     #temp functions
     def save_data(self):
