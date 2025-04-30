@@ -8,7 +8,8 @@ import logging
 
 from Utility.constants import (
     FILE_NAME, STATUS, CLIENT_TYPE, CLIENT_NAME, CLIENT_2_NAME, YEAR, DESCRIPTION,
-    DEFAULT_VALUES, FileData)
+    FILES_ID, TARGET_ID, BROWSER_ID,
+    DEFAULT_VALUES, DEFAULT_SETTINGS, FileData)
 
 class DataHandler:
 
@@ -46,36 +47,47 @@ class DataHandler:
             logging.info(f"File {file_name} not found!")
 
     def load_settings(self) -> None:
+        """
+        Attempts to load settings into a dictionary from settings.yaml
+        if the file is missing, corrupted, or wrong in some way,
+        creates a fresh settings.yaml file
+        """
         try:
             with open(self.settings_path, 'r') as file:
                 settings = yaml.load(file, Loader=yaml.FullLoader)
+            if self.validate_settings(settings):
+                logging.debug(f"settings loaded successfully: {settings}")
+                self.apply_settings(settings)
+                return
         except FileNotFoundError:
-            settings = {
-                "file_path": "",
-                "target_path": "",
-                "browser_path": ""
-            }
-            with open(self.settings_path, 'w') as file:
-                yaml.dump(settings, file, default_flow_style=False)
+            logging.warning("settings.yaml not found")
+        except Exception as e:
+            logging.warning(f"unexpected error reading settings.yaml: {e}")
 
+        logging.info("generating new settings.yaml")
+        with open(self.settings_path, 'w') as file:
+            yaml.dump(DEFAULT_SETTINGS, file, default_flow_style=False)
+
+    def apply_settings(self, settings:dict) -> None:
         def get_valid_path(key: str) -> str:
             path = settings.get(key)
             if not path:
                 logging.info(f"{key} is empty, setting to ''")
                 return ""
-            elif not os.path.exists(path):
+            if not os.path.exists(path):
+                logging.info(f"{key} path does not exist, setting to ''")
                 return ""
             return path
 
-        self.file_path = get_valid_path("file_path")
-        self.target_path = get_valid_path("target_path")
-        self.browser_path = get_valid_path("browser_path")
+        self.file_path = get_valid_path(FILES_ID)
+        self.target_path = get_valid_path(TARGET_ID)
+        self.browser_path = get_valid_path(BROWSER_ID)
 
     def save_settings(self) -> None:
         settings = {
-            "file_path":self.file_path,
-            "target_path":self.target_path,
-            "browser_path":self.browser_path
+            FILES_ID:self.file_path,
+            TARGET_ID:self.target_path,
+            BROWSER_ID:self.browser_path
         }
 
         logging.debug(f"saving settings: {settings} to {self.settings_path}")
@@ -84,6 +96,27 @@ class DataHandler:
                       stream=file,
                       default_flow_style=False,
                       sort_keys=False)
+
+    def validate_settings(self, settings:Any) -> bool:
+        """
+        If settings is a dictionary and contains only the expected settings, returns true
+        otherwise, return false
+        """
+        if not isinstance(settings,dict):
+            logging.warning("settings is not a dictionary")
+            return False
+
+        actual_keys = set(settings.keys())
+        expected_keys = set(DEFAULT_SETTINGS.keys())
+        unexpected_keys = actual_keys - expected_keys
+        if unexpected_keys:
+            logging.warning(f"settings dictionary did not pass validation, unexpected keys: {unexpected_keys}")
+            return False
+        missing_keys = expected_keys - actual_keys
+        if missing_keys:
+            logging.warning(f"settings dictionary did not pass validation, missing keys: {missing_keys}")
+            return False
+        return True
 
     def save_data_instance(self) -> None:
         with open(self.olddata_path,'w') as file:
