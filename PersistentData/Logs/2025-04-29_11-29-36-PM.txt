@@ -1,0 +1,43 @@
+>>[2025-04-29 23:29:36,360] [DEBUG] [Controller.py - 18 - __init__()]: Init Controller
+>>[2025-04-29 23:29:36,360] [DEBUG] [DataHandler.py - 25 - __init__()]: Init Datahandler
+>>[2025-04-29 23:29:36,361] [DEBUG] [DataHandler.py - 240 - resource_path()]: returning base path: F:\Coding\GitHub\SEK-FileSorter-v2.0 merged with relative path: PersistentData/Data/olddata.yaml
+>>[2025-04-29 23:29:36,361] [DEBUG] [DataHandler.py - 240 - resource_path()]: returning base path: F:\Coding\GitHub\SEK-FileSorter-v2.0 merged with relative path: PersistentData/Data/settings.yaml
+>>[2025-04-29 23:29:36,362] [INFO] [DataHandler.py - 64 - get_valid_path()]: target_path is empty, setting to ''
+>>[2025-04-29 23:29:36,362] [DEBUG] [DataHandler.py - 200 - update()]: updating...
+>>[2025-04-29 23:29:36,362] [INFO] [DataHandler.py - 105 - load_data_instance()]: olddata.yaml is empty, instantiating empty DataFrame for files_df
+>>[2025-04-29 23:29:36,363] [DEBUG] [DataHandler.py - 131 - filter_data()]: Checking if path exists: F:/Coding/Test SEK/Files -> True
+>>[2025-04-29 23:29:36,363] [DEBUG] [DataHandler.py - 174 - scan_files()]: Checking if path exists: F:/Coding/Test SEK/Files -> True
+>>[2025-04-29 23:29:36,363] [DEBUG] [DataHandler.py - 187 - scan_files()]: new file found file1.pdf, adding with filler data...
+>>[2025-04-29 23:29:36,365] [DEBUG] [DataHandler.py - 187 - scan_files()]: new file found file2.pdf, adding with filler data...
+>>[2025-04-29 23:29:36,365] [DEBUG] [DataHandler.py - 187 - scan_files()]: new file found file5_andareallylongname.pdf, adding with filler data...
+>>[2025-04-29 23:29:36,366] [DEBUG] [DataHandler.py - 210 - get_file_path()]: returned file_path: F:/Coding/Test SEK/Files
+>>[2025-04-29 23:29:36,366] [DEBUG] [DataHandler.py - 218 - get_target_path()]: returned target_path: 
+>>[2025-04-29 23:29:36,482] [DEBUG] [DataHandler.py - 36 - get_data_copy()]: returning copy of df:
+                      File_Name  File_Status  ... Year File_Description
+0                     file1.pdf        False  ...   -1             None
+1                     file2.pdf        False  ...   -1             None
+2  file5_andareallylongname.pdf        False  ...   -1             None
+
+[3 rows x 7 columns]
+>>[2025-04-29 23:29:36,483] [DEBUG] [Home.py - 56 - populate_table()]: files:
+                      File_Name  File_Status Client_Type     Client_Name Client_2_Name  Year File_Description
+0                     file1.pdf        False     unknown  unknown client          None    -1             None
+1                     file2.pdf        False     unknown  unknown client          None    -1             None
+2  file5_andareallylongname.pdf        False     unknown  unknown client          None    -1             None
+>>[2025-04-29 23:29:36,491] [DEBUG] [DataHandler.py - 245 - get_row()]: returning row:
+   File_Name  File_Status Client_Type  ... Client_2_Name Year  File_Description
+0  file1.pdf        False     unknown  ...          None   -1              None
+
+[1 rows x 7 columns]
+>>[2025-04-29 23:29:36,500] [DEBUG] [DataHandler.py - 245 - get_row()]: returning row:
+   File_Name  File_Status Client_Type  ... Client_2_Name Year  File_Description
+1  file2.pdf        False     unknown  ...          None   -1              None
+
+[1 rows x 7 columns]
+>>[2025-04-29 23:29:36,509] [DEBUG] [DataHandler.py - 245 - get_row()]: returning row:
+                      File_Name  File_Status  ... Year File_Description
+2  file5_andareallylongname.pdf        False  ...   -1             None
+
+[1 rows x 7 columns]
+>>[2025-04-29 23:29:36,511] [DEBUG] [GUI_Root.py - 66 - set_window()]: [<GUI.Home.Home object .!ctkframe.!home>]
+>>[2025-04-29 23:29:36,512] [DEBUG] [GUI_Root.py - 69 - set_window()]: home

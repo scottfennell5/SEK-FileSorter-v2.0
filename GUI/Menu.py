@@ -1,7 +1,10 @@
 import customtkinter as ctk
 
+from Controller import Controller
+
+
 class Menu(ctk.CTkFrame):
-    def __init__(self, controller, master, **kwargs):
+    def __init__(self, controller:Controller, master:ctk.CTkBaseClass, **kwargs):
         super().__init__(master, **kwargs)
         self.controller = controller
         self.grid_columnconfigure(0, weight=1)

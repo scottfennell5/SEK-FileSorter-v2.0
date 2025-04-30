@@ -1,0 +1,74 @@
+>>[2025-04-29 23:19:43,929] [DEBUG] [Controller.py - 18 - __init__()]: Init Controller
+>>[2025-04-29 23:19:43,929] [DEBUG] [DataHandler.py - 25 - __init__()]: Init Datahandler
+>>[2025-04-29 23:19:43,930] [DEBUG] [DataHandler.py - 240 - resource_path()]: returning base path: F:\Coding\GitHub\SEK-FileSorter-v2.0 merged with relative path: PersistentData/Data/olddata.yaml
+>>[2025-04-29 23:19:43,930] [DEBUG] [DataHandler.py - 240 - resource_path()]: returning base path: F:\Coding\GitHub\SEK-FileSorter-v2.0 merged with relative path: PersistentData/Data/settings.yaml
+>>[2025-04-29 23:19:43,930] [INFO] [DataHandler.py - 64 - get_valid_path()]: target_path is empty, setting to ''
+>>[2025-04-29 23:19:43,931] [DEBUG] [DataHandler.py - 200 - update()]: updating...
+>>[2025-04-29 23:19:43,931] [INFO] [DataHandler.py - 105 - load_data_instance()]: olddata.yaml is empty, instantiating empty DataFrame for files_df
+>>[2025-04-29 23:19:43,932] [DEBUG] [DataHandler.py - 131 - filter_data()]: Checking if path exists: F:/Coding/Test SEK/Files -> True
+>>[2025-04-29 23:19:43,933] [DEBUG] [DataHandler.py - 174 - scan_files()]: Checking if path exists: F:/Coding/Test SEK/Files -> True
+>>[2025-04-29 23:19:43,933] [DEBUG] [DataHandler.py - 187 - scan_files()]: new file found file1.pdf, adding with filler data...
+>>[2025-04-29 23:19:43,934] [DEBUG] [DataHandler.py - 187 - scan_files()]: new file found file2.pdf, adding with filler data...
+>>[2025-04-29 23:19:43,935] [DEBUG] [DataHandler.py - 187 - scan_files()]: new file found file5_andareallylongname.pdf, adding with filler data...
+>>[2025-04-29 23:19:43,936] [DEBUG] [DataHandler.py - 210 - get_file_path()]: returned file_path: F:/Coding/Test SEK/Files
+>>[2025-04-29 23:19:43,936] [DEBUG] [DataHandler.py - 218 - get_target_path()]: returned target_path: 
+>>[2025-04-29 23:19:44,049] [DEBUG] [DataHandler.py - 36 - get_data_copy()]: returning copy of df:
+                      File_Name  File_Status  ... Year File_Description
+0                     file1.pdf        False  ...   -1             None
+1                     file2.pdf        False  ...   -1             None
+2  file5_andareallylongname.pdf        False  ...   -1             None
+
+[3 rows x 7 columns]
+>>[2025-04-29 23:19:44,050] [DEBUG] [Home.py - 54 - populate_table()]: files:
+                      File_Name  File_Status Client_Type     Client_Name Client_2_Name  Year File_Description
+0                     file1.pdf        False     unknown  unknown client          None    -1             None
+1                     file2.pdf        False     unknown  unknown client          None    -1             None
+2  file5_andareallylongname.pdf        False     unknown  unknown client          None    -1             None
+>>[2025-04-29 23:19:44,058] [DEBUG] [DataHandler.py - 245 - get_row()]: returning row:
+   File_Name  File_Status Client_Type  ... Client_2_Name Year  File_Description
+0  file1.pdf        False     unknown  ...          None   -1              None
+
+[1 rows x 7 columns]
+>>[2025-04-29 23:19:44,067] [DEBUG] [DataHandler.py - 245 - get_row()]: returning row:
+   File_Name  File_Status Client_Type  ... Client_2_Name Year  File_Description
+1  file2.pdf        False     unknown  ...          None   -1              None
+
+[1 rows x 7 columns]
+>>[2025-04-29 23:19:44,075] [DEBUG] [DataHandler.py - 245 - get_row()]: returning row:
+                      File_Name  File_Status  ... Year File_Description
+2  file5_andareallylongname.pdf        False  ...   -1             None
+
+[1 rows x 7 columns]
+>>[2025-04-29 23:19:44,078] [DEBUG] [GUI_Root.py - 65 - set_window()]: [<GUI.Home.Home object .!ctkframe.!home>]
+>>[2025-04-29 23:19:44,078] [DEBUG] [GUI_Root.py - 68 - set_window()]: home
+>>[2025-04-29 23:19:44,913] [DEBUG] [FileInput.py - 29 - __init__()]: Creating FileInput object with data: {'File_Name': 'file1.pdf', 'File_Status': False, 'Client_Type': 'unknown', 'Client_Name': 'unknown client', 'Client_2_Name': None, 'Year': -1, 'File_Description': None}
+>>[2025-04-29 23:19:44,938] [WARNING] [FileInput.py - 84 - populate_body()]: ValueError, client type likely still default:
+CTkTabview has no tab named 'unknown'
+>>[2025-04-29 23:19:45,887] [DEBUG] [Home.py - 144 - update()]: Refreshing the UI with updated data.
+>>[2025-04-29 23:19:45,901] [DEBUG] [DataHandler.py - 36 - get_data_copy()]: returning copy of df:
+                      File_Name  File_Status  ... Year File_Description
+0                     file1.pdf        False  ...   -1             None
+1                     file2.pdf        False  ...   -1             None
+2  file5_andareallylongname.pdf        False  ...   -1             None
+
+[3 rows x 7 columns]
+>>[2025-04-29 23:19:45,901] [DEBUG] [Home.py - 54 - populate_table()]: files:
+                      File_Name  File_Status Client_Type     Client_Name Client_2_Name  Year File_Description
+0                     file1.pdf        False     unknown  unknown client          None    -1             None
+1                     file2.pdf        False     unknown  unknown client          None    -1             None
+2  file5_andareallylongname.pdf        False     unknown  unknown client          None    -1             None
+>>[2025-04-29 23:19:45,909] [DEBUG] [DataHandler.py - 245 - get_row()]: returning row:
+   File_Name  File_Status Client_Type  ... Client_2_Name Year  File_Description
+0  file1.pdf        False     unknown  ...          None   -1              None
+
+[1 rows x 7 columns]
+>>[2025-04-29 23:19:45,919] [DEBUG] [DataHandler.py - 245 - get_row()]: returning row:
+   File_Name  File_Status Client_Type  ... Client_2_Name Year  File_Description
+1  file2.pdf        False     unknown  ...          None   -1              None
+
+[1 rows x 7 columns]
+>>[2025-04-29 23:19:45,928] [DEBUG] [DataHandler.py - 245 - get_row()]: returning row:
+                      File_Name  File_Status  ... Year File_Description
+2  file5_andareallylongname.pdf        False  ...   -1             None
+
+[1 rows x 7 columns]

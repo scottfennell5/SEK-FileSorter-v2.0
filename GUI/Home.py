@@ -2,11 +2,13 @@ import customtkinter as ctk
 from functools import partial
 import logging
 
+from Controller import Controller
 from GUI.FileInput import FileInput
-from Utility.constants import FILE_NAME, STATUS, CLIENT_NAME
+from Utility.constants import FILE_NAME, STATUS, CLIENT_NAME, FileData
+
 
 class Home(ctk.CTkFrame):
-    def __init__(self, controller, master, **kwargs):
+    def __init__(self, controller:Controller, master:ctk.CTkBaseClass, **kwargs):
         super().__init__(master, **kwargs)
         self.controller = controller
         self.grid_columnconfigure(0, weight=1)
@@ -25,7 +27,7 @@ class Home(ctk.CTkFrame):
         self.populate_table()
         self.scrollable.grid(row=1,column=0,padx=5,pady=5,sticky='nsew')
 
-    def populate_header(self):
+    def populate_header(self) -> None:
         col = 0
         header_label = ctk.CTkLabel(self.header, text="Home",font=("Bold", 30),corner_radius=0,width=75,justify="left",anchor="w")
         header_label.pack(side=ctk.LEFT,padx=(8,150),pady=(5,2))
@@ -46,7 +48,7 @@ class Home(ctk.CTkFrame):
         refresh_button.pack(side=ctk.RIGHT,padx=4)
         col += 1
 
-    def populate_table(self):
+    def populate_table(self) -> None:
         for widget in self.scrollable.winfo_children():
             widget.destroy()
 
@@ -96,7 +98,7 @@ class Home(ctk.CTkFrame):
 
             row += 1
 
-    def open_file(self, file_data):
+    def open_file(self, file_data:FileData) -> None:
         inputOverlay = FileInput(self.controller, file_data, self, fg_color="#1E1E1E", corner_radius=5)
 
         start_y = 1.0
@@ -104,7 +106,7 @@ class Home(ctk.CTkFrame):
         steps = 20
         delay = 10
 
-        def animate(step=0):
+        def animate(step=0) -> None:
             progress = step / steps
             eased_progress = 1 - (1 - progress) ** 2
 
@@ -119,13 +121,13 @@ class Home(ctk.CTkFrame):
 
         animate()
 
-    def close(self,widget):
+    def close(self,widget:ctk.CTkBaseClass) -> None:
         start_y = 0.0
         target_y = 1.0
         steps = 20
         delay = 10
 
-        def animate(step=0):
+        def animate(step=0) -> None:
             progress = step / steps
             eased_progress = progress ** 2
 
@@ -140,10 +142,10 @@ class Home(ctk.CTkFrame):
         animate()
         self.update()
 
-    def update(self):
+    def update(self) -> None:
         logging.debug("Refreshing the UI with updated data.")
         self.populate_table()
 
-    def sort(self):
+    def sort(self) -> None:
         self.controller.sort_files()
         self.update()

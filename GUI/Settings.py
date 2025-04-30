@@ -1,10 +1,13 @@
 from tkinter import filedialog
+from typing import Any
+
 import customtkinter as ctk
 import os
 from PIL import Image
 from CTkMessagebox import CTkMessagebox
 import logging
 
+from Controller import Controller
 from Utility import ToolTip as ttp
 from Utility.constants import FILES_ID, TARGET_ID, BROWSER_ID
 
@@ -14,7 +17,7 @@ MAX_LENGTH = 50
 NO_PATH = "no path found! click here to select a path."
 
 class Settings(ctk.CTkFrame):
-    def __init__(self, controller, master, **kwargs):
+    def __init__(self, controller:Controller, master:ctk.CTkFrame, **kwargs):
         super().__init__(master, **kwargs)
         self.controller = controller
         self.file_path = self.controller.get_path(FILES_ID)
@@ -38,14 +41,14 @@ class Settings(ctk.CTkFrame):
         self.footer = ctk.CTkFrame(self,corner_radius=5,fg_color="transparent")
         self.footer.grid(row=2,column=0,sticky='nsew')
 
-    def populate_header(self):
+    def populate_header(self) -> None:
         for widget in self.header.winfo_children():
             widget.destroy()
         header_label = ctk.CTkLabel(self.header, text="Settings", font=("Bold", 30), corner_radius=0, width=75,
                                     justify="left", anchor="w")
         header_label.pack(side=ctk.LEFT, padx=(8, 0), pady=(5, 2))
 
-    def populate_body(self):
+    def populate_body(self) -> None:
         for widget in self.body.winfo_children():
             widget.destroy()
 
@@ -70,7 +73,7 @@ class Settings(ctk.CTkFrame):
                                          command=view_command)
                 view_button.grid(row=row, column=2, pady=(0, 5))
 
-        search_path = self.controller.get_resource("PersistentData\Icons\search_icon.png")
+        search_path = self.controller.get_resource_path("PersistentData\Icons\search_icon.png")
         search_image = ctk.CTkImage(Image.open(search_path), size=(IMG_WIDTH, IMG_HEIGHT))
 
         create_path_setting(
@@ -99,7 +102,7 @@ class Settings(ctk.CTkFrame):
             image=None
         )
 
-    def populate_footer(self):
+    def populate_footer(self) -> None:
         for widget in self.footer.winfo_children():
             widget.destroy()
 
@@ -113,11 +116,11 @@ class Settings(ctk.CTkFrame):
                                       command=lambda: self.cancel_changes())
         cancel_button.pack(side=ctk.RIGHT, padx=4, pady=5)
 
-    def clear_footer(self):
+    def clear_footer(self) -> None:
         for widget in self.footer.winfo_children():
             widget.destroy()
 
-    def update(self):
+    def update(self) -> None:
         for widget in self.body.winfo_children():
             widget.destroy()
 
@@ -128,13 +131,13 @@ class Settings(ctk.CTkFrame):
         else:
             self.clear_footer()
 
-    def view_directory(self, path):
+    def view_directory(self, path:str) -> None:
         try:
             os.startfile(path)
         except OSError:
             print(f"attempt to open path: {path} failed, invalid path")
 
-    def change_directory(self, pathID):
+    def change_directory(self, pathID:str) -> None:
         if pathID == BROWSER_ID:
             path = filedialog.askopenfilename(title="Select the EXE file for your browser",filetypes=[("Executables","*.exe")])
         else:
@@ -162,10 +165,7 @@ class Settings(ctk.CTkFrame):
         self.pending_changes = True
         self.update()
 
-    def select_browser(self):
-        pass
-
-    def apply_changes(self):
+    def apply_changes(self) -> None:
         if self.file_path != "":
             logging.debug(f"setting files_path to {self.file_path}")
             self.controller.set_path(FILES_ID, self.file_path)
@@ -180,7 +180,7 @@ class Settings(ctk.CTkFrame):
         self.pending_changes = False
         self.update()
 
-    def cancel_changes(self):
+    def cancel_changes(self) -> None:
         self.file_path = self.controller.get_path(FILES_ID)
         self.target_path = self.controller.get_path(TARGET_ID)
         self.browser_path = self.controller.get_path(BROWSER_ID)

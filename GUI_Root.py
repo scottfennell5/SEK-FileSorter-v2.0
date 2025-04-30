@@ -1,6 +1,7 @@
 import customtkinter as ctk
 import logging
 
+from Controller import Controller
 from GUI.Menu import Menu
 from GUI.Home import Home
 from GUI.Search import Search
@@ -8,7 +9,7 @@ from GUI.Settings import Settings
 from GUI.Help import Help
 
 class FileSorter(ctk.CTk):
-    def __init__(self, controller):
+    def __init__(self, controller:Controller):
         super().__init__()
         self.controller = controller
         self.current_window = None
@@ -32,14 +33,14 @@ class FileSorter(ctk.CTk):
         self.mainFrame.grid(row=0, column=1, padx=(0, 8), pady=8, sticky='nsew')
         self.set_window("home")
 
-    def get_screen_center_cords(self, root_width, root_height):
+    def get_screen_center_cords(self, root_width:int, root_height:int) -> tuple[int,int]:
         screen_width = self.winfo_screenwidth()
         screen_height = self.winfo_screenheight()
         x = (screen_width - root_width) // 2
         y = (screen_height - root_height) // 2
-        return [x, y]
+        return x,y
 
-    def set_window(self, window):
+    def set_window(self, window:str) -> None:
         if window == self.current_window:
             return
 

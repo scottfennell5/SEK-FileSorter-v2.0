@@ -1,13 +1,16 @@
 import logging
 import re
-import duckdb as ddb
+from typing import List
+import pandas as pd
 
 from Sorter import Sorter
 from DataHandler import DataHandler
 from Utility.constants import (
-    FILE_NAME, STATUS, CLIENT_TYPE, CLIENT_NAME, CLIENT_NAME_2, YEAR, DESCRIPTION,
+    FILE_NAME, STATUS, CLIENT_TYPE, CLIENT_NAME, CLIENT_2_NAME, YEAR, DESCRIPTION, #indexes
     FILES_ID, TARGET_ID, BROWSER_ID,
-    CLIENT, BUSINESS, VALID_NAME_CLIENT, VALID_NAME_BUSINESS, VALID_YEAR, DEFAULT_VALUES)
+    NAME_VALIDATORS, VALID_YEAR, DEFAULT_VALUES,
+    FileData #type hinting
+)
 
 class Controller:
 
@@ -18,74 +21,66 @@ class Controller:
                              target_path=self.dataHandler.get_target_path())
         self.observers = [self.dataHandler, self.sorter]
 
-    def new_observer(self, observer):
+    def new_observer(self, observer: DataHandler | Sorter) -> None:
         self.observers.append(observer)
 
-    def set_observer_filepath(self, path):
-        logging.debug(f"Setting file path to {path} for all observers")
+    def set_observer_filepath(self, path:str) -> None:
         for observer in self.observers:
-            logging.debug(f"observer:{observer} to file path:{path}")
             observer.set_file_path(path)
             observer.update()
 
-    def set_observer_targetpath(self, path):
-        logging.debug(f"Setting target path to {path} for all observers")
+    def set_observer_targetpath(self, path:str) -> None:
         for observer in self.observers:
-            logging.debug(f"observer:{observer} to target path:{path}")
             observer.set_target_path(path)
             observer.update()
 
-    def create_logs(self):
-        pass #logs when application closes
-
-    def get_data_copy(self):
+    def get_data_copy(self) -> pd.DataFrame:
         return self.dataHandler.get_data_copy()
 
-    def get_row(self, file_name):
+    def get_row(self, file_name:str) -> FileData:
         return self.dataHandler.get_row(file_name)
 
-    def open_file(self, file_name):
+    def open_file(self, file_name:str) -> None:
         self.dataHandler.open_file(file_name)
 
-    def get_path(self, pathID):
-        match pathID:
-            case _ if pathID == FILES_ID:
-                path = self.dataHandler.get_file_path()
-            case _ if pathID == TARGET_ID:
-                path = self.dataHandler.get_target_path()
-            case _ if pathID == BROWSER_ID:
-                path = self.dataHandler.get_browser_path()
-            case _:
-                logging.error(f"pathID invalid:{pathID}")
-                raise ValueError("Invalid pathID passed into controller.get_path()")
-
+    def get_path(self, pathID:str) -> str:
+        path_map = {
+            FILES_ID: self.dataHandler.get_file_path(),
+            TARGET_ID: self.dataHandler.get_target_path(),
+            BROWSER_ID: self.dataHandler.get_browser_path()
+        }
+        path = path_map.get(pathID)
         if path is None:
+            logging.error(f"pathID invalid:{pathID}")
             return ""
-        else:
-            return path
+        return path
 
-    def set_path(self, pathID, path):
+    def set_path(self, pathID:str, path:str) -> None:
         if path == '':
             logging.warning("called with empty path, no action taken from controller")
             return
-        match pathID:
-            case _ if pathID == FILES_ID:
-                self.set_observer_filepath(path)
-            case _ if pathID == TARGET_ID:
-                self.set_observer_targetpath(path)
-            case _ if pathID == BROWSER_ID:
-                self.dataHandler.set_browser_path(path)
+        path_setters = {
+            FILES_ID: self.set_observer_filepath,
+            TARGET_ID: self.set_observer_targetpath,
+            BROWSER_ID: self.dataHandler.set_browser_path
+        }
 
-    def save_settings(self):
+        setter = path_setters.get(pathID)
+        if setter:
+            setter(path)
+        else:
+            logging.error(f"Invalid pathID: {pathID}")
+
+    def save_settings(self) -> None:
         self.dataHandler.save_settings()
 
-    def get_resource(self, relative_path):
+    def get_resource_path(self, relative_path) -> str:
         return self.dataHandler.resource_path(relative_path)
 
-    def get_base_directory(self):
+    def get_base_directory(self) -> str:
         return self.dataHandler.get_base_directory()
 
-    def save_row_changes(self, file_data, radio_value):
+    def save_row_changes(self, file_data: dict, radio_value: bool) -> List[str]:
         logging.debug(f"row changes submitted for {file_data[FILE_NAME]}, validating...")
 
         valid_data, errors = self.clean_and_validate_row(file_data, radio_value)
@@ -97,21 +92,17 @@ class Controller:
         self.dataHandler.update_row(valid_data)
         return errors
 
-    def clean_and_validate_row(self, file_data, client2):
+    def clean_and_validate_row(self, file_data: dict, client2:bool) -> tuple[dict,List[str]]:
         logging.debug(f"validating row: {file_data}")
         errors = []
         cleaned_data = DEFAULT_VALUES.copy()
         cleaned_data[FILE_NAME] = file_data[FILE_NAME]
         cleaned_data[CLIENT_TYPE] = file_data[CLIENT_TYPE]
 
-        name_validators = {
-            CLIENT: VALID_NAME_CLIENT,
-            BUSINESS: VALID_NAME_BUSINESS
-        }
-        validator = name_validators[cleaned_data[CLIENT_TYPE]]
+        validator = NAME_VALIDATORS[cleaned_data[CLIENT_TYPE]]
 
         name = file_data[CLIENT_NAME]
-        name2 = file_data[CLIENT_NAME_2]
+        name2 = file_data[CLIENT_2_NAME]
 
         if re.fullmatch(validator, name):
             cleaned_data[CLIENT_NAME] = name
@@ -121,7 +112,7 @@ class Controller:
         client2_exists = client2 == 1
         if client2_exists:
             if re.fullmatch(validator, name2):
-                cleaned_data[CLIENT_NAME_2] = name2
+                cleaned_data[CLIENT_2_NAME] = name2
             else:
                 errors.append("Client 2")
 
@@ -140,11 +131,12 @@ class Controller:
         cleaned_data[STATUS] = not errors
         return cleaned_data, errors
 
-    def sort_files(self):
+    def sort_files(self) -> None:
         data_copy = self.dataHandler.get_data_copy()
-        files_ready = ddb.query(f"SELECT * FROM data_copy WHERE {STATUS}==True").df()
+        files_ready = data_copy.loc[data_copy[STATUS] == True]
         logging.debug(f"The following files are ready for sorting:\n{files_ready.to_string()}")
-        self.sorter.sort_file(files_ready)
+        remaining_files = self.sorter.sort_files(files_ready)
+        raise NotImplementedError
 
     #temp functions
     def save_data(self):

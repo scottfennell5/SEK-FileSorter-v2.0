@@ -1,38 +1,39 @@
 import logging
+from typing import Any
 
 import customtkinter as ctk
 import tkinter as tk
 
+from Controller import Controller
 from Utility.constants import (
-    FILE_NAME, STATUS, CLIENT_TYPE, CLIENT_NAME, CLIENT_NAME_2, YEAR, DESCRIPTION,
-    CLIENT, BUSINESS)
+    FILE_NAME, STATUS, CLIENT_TYPE, CLIENT_NAME, CLIENT_2_NAME, YEAR, DESCRIPTION,
+    CLIENT, BUSINESS,
+    FileData)
 
 class FileInput(ctk.CTkFrame):
-    CLIENT = "Client"
-    BUSINESS = "Business"
+    MAX_LENGTH = 15
 
-    RADIO_VAR = "radiovar"
-
+    RADIO_VAR = "radio_var"
     SAMPLE_DATA = {
         CLIENT: {
             CLIENT_NAME: "Bob Smith",
-            CLIENT_NAME_2: "Amanda Smith"
+            CLIENT_2_NAME: "Amanda Smith"
         },
         BUSINESS: {
             CLIENT_NAME: "BUSINESS LLC",
-            CLIENT_NAME_2: "ANOTHER BUSINESS INC"
+            CLIENT_2_NAME: "ANOTHER BUSINESS INC"
         }
     }
 
-    def __init__(self, controller, file_data, master, **kwargs):
+    def __init__(self, controller:Controller, file_data:FileData, master:ctk.CTkBaseClass, **kwargs):
         super().__init__(master, **kwargs)
         logging.debug(f"Creating FileInput object with data: {file_data}")
         self.controller = controller
         self.file_data_original = file_data
         self.file_data = file_data
         self.entries = {
-            self.CLIENT: {},
-            self.BUSINESS: {}
+            CLIENT: {},
+            BUSINESS: {}
         }
         self.status_label = None
         self.grid_columnconfigure(0, weight=1)
@@ -52,12 +53,11 @@ class FileInput(ctk.CTkFrame):
         self.footer.grid(row=2,column=0,padx=4,pady=4,sticky='ew')
         self.populate_footer()
 
-    def populate_header(self):
-        MAX_LENGTH = 15
+    def populate_header(self) -> None:
 
         file_name = self.file_data[FILE_NAME]
-        if len(file_name) > MAX_LENGTH:
-            file_name = file_name[:MAX_LENGTH].rstrip() + "..."
+        if len(file_name) > self.MAX_LENGTH:
+            file_name = file_name[:self.MAX_LENGTH].rstrip() + "..."
         header_label = ctk.CTkLabel(self.header,text=file_name,
                                     font=("Bold",30),corner_radius=0,width=75,
                                     fg_color="transparent",justify="left",anchor="w")
@@ -74,7 +74,7 @@ class FileInput(ctk.CTkFrame):
         close_button.pack(side=ctk.RIGHT, padx=4, pady=5)
         open_file_button.pack(side=ctk.RIGHT, padx=4, pady=5)
 
-    def populate_body(self):
+    def populate_body(self) -> None:
         self.tab_view = ctk.CTkTabview(self.body,fg_color="#1A1A1A", corner_radius=0)
         self.tab_view.pack(fill="both",expand=True)
         tab_client = self.tab_view.add(CLIENT)
@@ -83,14 +83,14 @@ class FileInput(ctk.CTkFrame):
             self.tab_view.set(self.file_data[CLIENT_TYPE])
         except ValueError as e:
             logging.warning(f"ValueError, client type likely still default:\n{e}")
-            self.tab_view.set(self.CLIENT)
+            self.tab_view.set(CLIENT)
 
-        self.populate_tab(tab_client, self.CLIENT)
+        self.populate_tab(tab_client, CLIENT)
         tab_client.columnconfigure(1,weight=1)
         tab_client.columnconfigure(3, weight=1)
-        self.populate_tab(tab_business, self.BUSINESS)
+        self.populate_tab(tab_business, BUSINESS)
 
-    def create_labeled_entry(self, parent, label_text, placeholder):
+    def create_labeled_entry(self, parent:Any, label_text:str, placeholder:str) -> ctk.CTkEntry:
         """
             Label_text: [placeholder   ]
         """
@@ -102,7 +102,7 @@ class FileInput(ctk.CTkFrame):
         entry.pack(side="left", fill="x", expand=True, padx=(10, 0))
         return entry
 
-    def populate_tab(self, tab, tab_type):
+    def populate_tab(self, tab:Any, tab_type:str) -> None:
         container = ctk.CTkFrame(tab, fg_color="transparent")
         container.pack(fill="both", expand=True, padx=20, pady=20)
 
@@ -120,7 +120,7 @@ class FileInput(ctk.CTkFrame):
         radio_var = tk.IntVar(value=0)
         self.entries[tab_type][self.RADIO_VAR] = radio_var
 
-        def radiobutton_event():
+        def radiobutton_event() -> None:
             if self.entries[tab_type][self.RADIO_VAR].get() == 1:
                 client2_frame.grid(row=2, column=0, sticky="ew", padx=20, pady=10)
             else:
@@ -134,8 +134,8 @@ class FileInput(ctk.CTkFrame):
         client2_frame = ctk.CTkFrame(container, fg_color="transparent")
         client2_label = ctk.CTkLabel(client2_frame, text="Client 2", font=ctk.CTkFont(size=16, weight="bold"))
         client2_label.pack(anchor="w", pady=(0, 5))
-        entry = self.create_labeled_entry(client2_frame, "Name:", self.SAMPLE_DATA[tab_type][CLIENT_NAME_2])
-        self.entries[tab_type][CLIENT_NAME_2] = entry
+        entry = self.create_labeled_entry(client2_frame, "Name:", self.SAMPLE_DATA[tab_type][CLIENT_2_NAME])
+        self.entries[tab_type][CLIENT_2_NAME] = entry
 
         misc_frame = ctk.CTkFrame(container, fg_color="transparent")
         misc_frame.grid(row=3, column=0, sticky="ew", padx=20, pady=10)
@@ -146,7 +146,7 @@ class FileInput(ctk.CTkFrame):
 
         # fill already completed entry labels
         client1_name = self.file_data[CLIENT_NAME]
-        client2_name = self.file_data[CLIENT_NAME_2]
+        client2_name = self.file_data[CLIENT_2_NAME]
         year = self.file_data[YEAR]
         file_desc = self.file_data[DESCRIPTION]
 
@@ -154,7 +154,7 @@ class FileInput(ctk.CTkFrame):
             self.entries[tab_type][CLIENT_NAME].insert(0, client1_name)
 
         if client2_name is not None:
-            self.entries[tab_type][CLIENT_NAME_2].insert(0, client2_name)
+            self.entries[tab_type][CLIENT_2_NAME].insert(0, client2_name)
             self.entries[tab_type][self.RADIO_VAR].set(1)
         else:
             self.entries[tab_type][self.RADIO_VAR].set(0)
@@ -166,20 +166,20 @@ class FileInput(ctk.CTkFrame):
         if file_desc is not None:
             self.entries[tab_type][DESCRIPTION].insert(0, file_desc)
 
-    def populate_footer(self):
+    def populate_footer(self) -> None:
         close_button = ctk.CTkButton(self.footer, text="Save Changes", width=125,
                                      fg_color="#C3B1E1", text_color="black", hover_color="#CCCCFF",
                                      command=lambda: self.save_changes(self.tab_view.get()))
 
         close_button.pack(side=ctk.RIGHT, padx=4, pady=5)
 
-    def save_changes(self, tab_type):
+    def save_changes(self, tab_type:str) -> None:
         self.file_data = {
             FILE_NAME:self.file_data_original[FILE_NAME],
             STATUS:self.file_data_original[STATUS],
             CLIENT_TYPE:self.tab_view.get(),
             CLIENT_NAME:self.entries[tab_type][CLIENT_NAME].get(),
-            CLIENT_NAME_2:self.entries[tab_type][CLIENT_NAME_2].get(),
+            CLIENT_2_NAME:self.entries[tab_type][CLIENT_2_NAME].get(),
             YEAR:self.entries[tab_type][YEAR].get(),
             DESCRIPTION:self.entries[tab_type][DESCRIPTION].get()
         }
@@ -197,9 +197,9 @@ class FileInput(ctk.CTkFrame):
                                               text_color="#FFD7D7")
             self.status_label.pack(side=ctk.LEFT)
 
-    def open_file(self,file_name):
+    def open_file(self,file_name:str) -> None:
         self.controller.open_file(file_name)
 
-    def close(self):
+    def close(self) -> None:
         if hasattr(self.master, 'close'):
             self.master.close(self)

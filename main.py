@@ -7,15 +7,10 @@ import yaml
 from Controller import Controller
 from GUI_Root import FileSorter
 
-def start_logs():
+def start_logs() -> None:
     base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
-    config = os.path.join(base_path, "PersistentData\Data\DO_NOT_EDIT.yaml")
-    with open(config, 'r') as file:
-        logs_path = yaml.load(file, Loader=yaml.FullLoader)
-
-    log_path = logs_path.get("logs_path")
-    now = datetime.now()
-    log_name = now.strftime("%m-%d-%Y_%H-%M-%S_log.txt")
+    log_path = os.path.join(base_path, "PersistentData\Logs")
+    log_name = f"{datetime.now():%Y-%m-%d_%I-%M-%S-%p}.txt"
     log_file = os.path.join(log_path, log_name)
 
     logging.basicConfig(level=logging.DEBUG, filename=log_file, filemode="w",
