@@ -57,8 +57,10 @@ class FileInput(ctk.CTkFrame):
 
         file_name = self.file_data[FILE_NAME]
         if len(file_name) > self.MAX_LENGTH:
-            file_name = file_name[:self.MAX_LENGTH].rstrip() + "..."
-        header_label = ctk.CTkLabel(self.header,text=file_name,
+            file_name_header = file_name[:self.MAX_LENGTH].rstrip() + "..."
+        else:
+            file_name_header = file_name
+        header_label = ctk.CTkLabel(self.header,text=file_name_header,
                                     font=("Bold",30),corner_radius=0,width=75,
                                     fg_color="transparent",justify="left",anchor="w")
         header_label.pack(side=ctk.LEFT,padx=(8, 0),pady=(5, 2))
@@ -184,21 +186,26 @@ class FileInput(ctk.CTkFrame):
             DESCRIPTION:self.entries[tab_type][DESCRIPTION].get()
         }
         errors = self.controller.save_row_changes(self.file_data, self.entries[tab_type][self.RADIO_VAR].get())
-        if self.status_label:
-            self.status_label.destroy()
+
         if not errors:
-            self.status_label = ctk.CTkLabel(self.footer,
-                                             text=f"*Data is valid and has been saved.\nYou can safely close this window.",
-                                             text_color="#90EE90")
-            self.status_label.pack(side=ctk.LEFT)
+            status_msg = f"*Data is valid and has been saved.\nYou can safely close this window."
+            self.change_status(status_msg, text_color="#90EE90")
         else:
-            self.status_label = ctk.CTkLabel(self.footer,
-                                              text=f"*Data saved, but the following fields are empty or incorrect:\n{errors}",
-                                              text_color="#FFD7D7")
-            self.status_label.pack(side=ctk.LEFT)
+            status_msg = f"*Data saved, but the following fields are empty or incorrect:\n{errors}"
+            self.change_status(status_msg,text_color="#FFD7D7")
 
     def open_file(self,file_name:str) -> None:
-        self.controller.open_file(file_name)
+        error_msg = self.controller.open_file(file_name)
+        if error_msg:
+            self.change_status(error_msg, text_color="#FFD7D7")
+
+    def change_status(self,status_msg:str, text_color:str) -> None:
+        if self.status_label:
+            self.status_label.destroy()
+        self.status_label = ctk.CTkLabel(self.footer,
+                                         text=status_msg,text_color=text_color,
+                                         anchor="w")
+        self.status_label.pack(side=ctk.LEFT)
 
     def close(self) -> None:
         if hasattr(self.master, 'close'):

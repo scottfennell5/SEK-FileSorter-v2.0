@@ -144,6 +144,7 @@ class Home(ctk.CTkFrame):
 
     def update(self) -> None:
         logging.debug("Refreshing the UI with updated data.")
+        self.controller.update()
         self.populate_table()
 
     def sort(self) -> None:

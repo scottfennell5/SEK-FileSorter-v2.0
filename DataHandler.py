@@ -1,6 +1,6 @@
 import sys
 from typing import Any
-
+import webbrowser as wb
 import pandas as pd
 import yaml
 import os
@@ -22,15 +22,6 @@ class DataHandler:
         self.browser_path = ""
         self.load_settings()
         self.update()
-
-    def open_file(self,file_name) -> None:
-        if self.file_path == "":
-            logging.warning("File path undefined! cant open file")
-        if file_name in os.listdir(self.file_path):
-            #open file
-            raise NotImplementedError
-        else:
-            logging.info(f"File {file_name} not found!")
 
     #SETTINGS ----------------------------------------------------------------------------------------------------------
     def load_settings(self) -> None:
@@ -104,6 +95,7 @@ class DataHandler:
         self.file_path = get_valid_path(FILES_ID)
         self.target_path = get_valid_path(TARGET_ID)
         self.browser_path = get_valid_path(BROWSER_ID)
+        wb.register(BROWSER_ID,None,wb.BackgroundBrowser(self.browser_path))
 
     #FILE DATA ---------------------------------------------------------------------------------------------------------
     def load_data_instance(self) -> None:
@@ -238,7 +230,8 @@ class DataHandler:
         self.save_data_instance()
 
     def remove_row(self, file_name: str) -> None:
-        raise NotImplementedError
+        logging.debug(f"removing row: {file_name} from files_df")
+        self.files_df = self.files_df[self.files_df["FILE_NAME"] != file_name]
 
     #UTILITY -----------------------------------------------------------------------------------------------------------
     def update(self) -> None:
@@ -246,6 +239,29 @@ class DataHandler:
         self.load_data_instance()
         self.filter_data()
         self.scan_files()
+
+    def open_file(self,file_name) -> str:
+        if self.file_path == "":
+            error = "File path undefined.\nPlease specify a file path in settings."
+            logging.warning(error)
+            return error
+        if self.browser_path == "":
+            error = "Browser path undefined.\nPlease specify a browser in settings."
+            logging.warning(error)
+            return error
+        full_path = os.path.join(self.file_path, file_name)
+        if os.path.exists(full_path):
+            new = 2 #open in new tab
+            try:
+                wb.get(BROWSER_ID).open(f"file://{full_path}", new=new)
+                return ""
+            except wb.Error as e:
+                logging.warning(f"failed to open with browser: {e}")
+                return "Failed to open with provided browser path.\nTry setting another path in settings."
+        else:
+            error = f"File {file_name} not found!"
+            logging.info(error)
+            return error
 
     def get_data_copy(self) -> pd.DataFrame:
         logging.debug(f"returning copy of df:\n{self.files_df}")
@@ -285,6 +301,7 @@ class DataHandler:
     def set_browser_path(self, path: str) -> None:
         logging.debug(f"set browser_path to {path}")
         self.browser_path = path
+        wb.register(BROWSER_ID,None,wb.BackgroundBrowser(self.browser_path))
 
     def get_browser_path(self) -> str:
         logging.debug(f"returned browser_path: {self.browser_path}")

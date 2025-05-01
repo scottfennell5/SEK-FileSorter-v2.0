@@ -34,14 +34,19 @@ class Controller:
             observer.set_target_path(path)
             observer.update()
 
+    def update(self) -> None:
+        for observer in self.observers:
+            observer.update()
+
     def get_data_copy(self) -> pd.DataFrame:
         return self.dataHandler.get_data_copy()
 
     def get_row(self, file_name:str) -> FileData:
         return self.dataHandler.get_row(file_name)
 
-    def open_file(self, file_name:str) -> None:
-        self.dataHandler.open_file(file_name)
+    def open_file(self, file_name:str) -> str:
+        error_msg = self.dataHandler.open_file(file_name)
+        return error_msg
 
     def get_path(self, pathID:str) -> str:
         path_map = {
@@ -132,24 +137,10 @@ class Controller:
         return cleaned_data, errors
 
     def sort_files(self) -> None:
+        self.dataHandler.filter_data()
         data_copy = self.dataHandler.get_data_copy()
         files_ready = data_copy.loc[data_copy[STATUS] == True]
         logging.debug(f"The following files are ready for sorting:\n{files_ready.to_string()}")
-        remaining_files, missing_files = self.sorter.sort_files(files_ready)
-        raise NotImplementedError
-
-    #temp functions
-    def save_data(self):
-        self.dataHandler.save_data_instance()
-
-    def load_data(self):
-        self.dataHandler.load_data_instance()
-
-    def check_data(self):
-        print(self.dataHandler.get_data_copy())
-
-    def filter_data(self):
-        self.dataHandler.filter_data()
-
-    def get_settings(self):
-        self.dataHandler.load_settings()
+        sorted_files = self.sorter.sort_files(files_ready)
+        for file in sorted_files:
+            self.dataHandler.remove_row(file)
