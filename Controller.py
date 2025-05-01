@@ -141,6 +141,5 @@ class Controller:
         data_copy = self.dataHandler.get_data_copy()
         files_ready = data_copy.loc[data_copy[STATUS] == True]
         logging.debug(f"The following files are ready for sorting:\n{files_ready.to_string()}")
-        sorted_files = self.sorter.sort_files(files_ready)
-        for file in sorted_files:
-            self.dataHandler.remove_row(file)
+        self.sorter.sort_files(files_ready)
+        self.dataHandler.filter_data()

@@ -33,19 +33,18 @@ class Sorter:
     def update(self) -> None:
         logging.debug("sorter updated")
 
-    def sort_files(self, files_to_sort:pd.DataFrame) -> list:
+    def sort_files(self, files_to_sort:pd.DataFrame) -> None:
         """
         Accepts a pandas dataframe containing all files where STATUS is True, sorts them into directories based on provided info
         Creates a new directory & income tax folder if one is not found
-        Returns: tuple(sorted_files, missing_files)
         """
         sorted_files = []
         if not os.path.exists(self.file_path):
             logging.info("sort called without valid file path")
-            return sorted_files
+            return
         if not os.path.exists(self.target_path):
             logging.info("sort called without valid target path")
-            return sorted_files
+            return
 
         files_to_sort.set_index(FILE_NAME, inplace=True)
         files = list(files_to_sort.index)
@@ -85,7 +84,7 @@ class Sorter:
             sorted_files.append(file_name)
 
         logging.debug(f"file sorting complete, files sorted: {sorted_files}")
-        return sorted_files
+        return
 
     def create_client_directory(self, name:str, name_2:str) -> str:
         first, last = name.split(" ")
