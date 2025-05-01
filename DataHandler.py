@@ -229,10 +229,6 @@ class DataHandler:
         logging.debug(f"New dataframe: {self.files_df.to_string()}")
         self.save_data_instance()
 
-    def remove_row(self, file_name: str) -> None:
-        logging.debug(f"removing row: {file_name} from files_df")
-        self.files_df = self.files_df[self.files_df[FILE_NAME] != file_name]
-
     #UTILITY -----------------------------------------------------------------------------------------------------------
     def update(self) -> None:
         logging.debug("updating...")
