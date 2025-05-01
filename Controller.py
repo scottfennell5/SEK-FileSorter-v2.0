@@ -74,13 +74,13 @@ class Controller:
     def save_settings(self) -> None:
         self.dataHandler.save_settings()
 
-    def get_resource_path(self, relative_path) -> str:
+    def get_resource_path(self, relative_path:str) -> str:
         return self.dataHandler.resource_path(relative_path)
 
     def get_base_directory(self) -> str:
         return self.dataHandler.get_base_directory()
 
-    def save_row_changes(self, file_data: dict, radio_value: bool) -> List[str]:
+    def save_row_changes(self, file_data:dict, radio_value:bool) -> List[str]:
         logging.debug(f"row changes submitted for {file_data[FILE_NAME]}, validating...")
 
         valid_data, errors = self.clean_and_validate_row(file_data, radio_value)
@@ -92,7 +92,7 @@ class Controller:
         self.dataHandler.update_row(valid_data)
         return errors
 
-    def clean_and_validate_row(self, file_data: dict, client2:bool) -> tuple[dict,List[str]]:
+    def clean_and_validate_row(self, file_data:dict, client2:bool) -> tuple[dict,List[str]]:
         logging.debug(f"validating row: {file_data}")
         errors = []
         cleaned_data = DEFAULT_VALUES.copy()
@@ -135,7 +135,7 @@ class Controller:
         data_copy = self.dataHandler.get_data_copy()
         files_ready = data_copy.loc[data_copy[STATUS] == True]
         logging.debug(f"The following files are ready for sorting:\n{files_ready.to_string()}")
-        remaining_files = self.sorter.sort_files(files_ready)
+        remaining_files, missing_files = self.sorter.sort_files(files_ready)
         raise NotImplementedError
 
     #temp functions

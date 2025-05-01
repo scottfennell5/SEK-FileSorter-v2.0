@@ -9,22 +9,12 @@ import logging
 from Utility.constants import (
     FILE_NAME, STATUS, CLIENT_TYPE, CLIENT_NAME, CLIENT_2_NAME, YEAR, DESCRIPTION,
     FILES_ID, TARGET_ID, BROWSER_ID,
-    DEFAULT_VALUES, DEFAULT_SETTINGS, FileData)
+    DEFAULT_VALUES, DEFAULT_SETTINGS, DEFAULT_DATAFRAME, FileData)
 
 class DataHandler:
-
-    #template for a row inside files_df
-    files_dict = {FILE_NAME:pd.Series(dtype=str),
-                  STATUS:pd.Series(dtype=bool),
-                  CLIENT_TYPE:pd.Series(dtype=str),
-                  CLIENT_NAME:pd.Series(dtype=str),
-                  CLIENT_2_NAME:pd.Series(dtype=str),
-                  YEAR:pd.Series(dtype=int),
-                  DESCRIPTION:pd.Series(dtype=str)}
-
     def __init__(self):
         logging.debug("Init Datahandler")
-        self.files_df = pd.DataFrame(self.files_dict)
+        self.files_df = DEFAULT_DATAFRAME
         self.olddata_path = self.resource_path(r"PersistentData/Data/olddata.yaml")
         self.settings_path = self.resource_path(r"PersistentData/Data/settings.yaml")
         self.file_path = ""
@@ -32,10 +22,6 @@ class DataHandler:
         self.browser_path = ""
         self.load_settings()
         self.update()
-
-    def get_data_copy(self) -> pd.DataFrame:
-        logging.debug(f"returning copy of df:\n{self.files_df}")
-        return self.files_df.copy()
 
     def open_file(self,file_name) -> None:
         if self.file_path == "":
@@ -46,6 +32,7 @@ class DataHandler:
         else:
             logging.info(f"File {file_name} not found!")
 
+    #SETTINGS ----------------------------------------------------------------------------------------------------------
     def load_settings(self) -> None:
         """
         Attempts to load settings into a dictionary from settings.yaml
@@ -68,35 +55,6 @@ class DataHandler:
         with open(self.settings_path, 'w') as file:
             yaml.dump(DEFAULT_SETTINGS, file, default_flow_style=False)
 
-    def apply_settings(self, settings:dict) -> None:
-        def get_valid_path(key: str) -> str:
-            path = settings.get(key)
-            if not path:
-                logging.info(f"{key} is empty, setting to ''")
-                return ""
-            if not os.path.exists(path):
-                logging.info(f"{key} path does not exist, setting to ''")
-                return ""
-            return path
-
-        self.file_path = get_valid_path(FILES_ID)
-        self.target_path = get_valid_path(TARGET_ID)
-        self.browser_path = get_valid_path(BROWSER_ID)
-
-    def save_settings(self) -> None:
-        settings = {
-            FILES_ID:self.file_path,
-            TARGET_ID:self.target_path,
-            BROWSER_ID:self.browser_path
-        }
-
-        logging.debug(f"saving settings: {settings} to {self.settings_path}")
-        with open(self.settings_path, 'w') as file:
-            yaml.dump(settings,
-                      stream=file,
-                      default_flow_style=False,
-                      sort_keys=False)
-
     def validate_settings(self, settings:Any) -> bool:
         """
         If settings is a dictionary and contains only the expected settings, returns true
@@ -118,13 +76,36 @@ class DataHandler:
             return False
         return True
 
-    def save_data_instance(self) -> None:
-        with open(self.olddata_path,'w') as file:
-            yaml.dump(self.files_df.to_dict(orient="records"),
+    def save_settings(self) -> None:
+        settings = {
+            FILES_ID:self.file_path,
+            TARGET_ID:self.target_path,
+            BROWSER_ID:self.browser_path
+        }
+
+        logging.debug(f"saving settings: {settings} to {self.settings_path}")
+        with open(self.settings_path, 'w') as file:
+            yaml.dump(settings,
                       stream=file,
                       default_flow_style=False,
                       sort_keys=False)
 
+    def apply_settings(self, settings:dict) -> None:
+        def get_valid_path(key: str) -> str:
+            path = settings.get(key)
+            if not path:
+                logging.info(f"{key} is empty, setting to ''")
+                return ""
+            if not os.path.exists(path):
+                logging.info(f"{key} path does not exist, setting to ''")
+                return ""
+            return path
+
+        self.file_path = get_valid_path(FILES_ID)
+        self.target_path = get_valid_path(TARGET_ID)
+        self.browser_path = get_valid_path(BROWSER_ID)
+
+    #FILE DATA ---------------------------------------------------------------------------------------------------------
     def load_data_instance(self) -> None:
         """
         Attempts to read olddata.yaml into a dataframe
@@ -136,7 +117,7 @@ class DataHandler:
                 data = yaml.load(file, Loader=yaml.FullLoader)
                 if data is None:
                     logging.info("olddata.yaml is empty, instantiating empty DataFrame for files_df")
-                    self.files_df = pd.DataFrame(self.files_dict)
+                    self.files_df = DEFAULT_DATAFRAME
                     return
                 self.files_df = pd.json_normalize(data)
                 if self.validate_file_dataframe():
@@ -149,29 +130,13 @@ class DataHandler:
         except Exception as e:
             logging.warning(f"unexpected error occurred while loading data: {e}")
 
-        self.files_df = pd.DataFrame(self.files_dict)
+        self.files_df = DEFAULT_DATAFRAME
         with open(self.olddata_path, 'w') as file:
             yaml.dump(self.files_df.to_dict(orient="records"),
                       stream=file,
                       default_flow_style=False,
                       sort_keys=False)
         logging.debug("created new empty olddata.yaml")
-
-    def filter_data(self) -> None:
-        """
-        Removes rows correlating to file names that no longer exist
-        """
-        logging.debug(f"Checking if path exists: {self.file_path} -> {os.path.exists(self.file_path)}")
-        if self.file_path == "" or not os.path.exists(self.file_path):
-            logging.warning("dataHandler.filter_data: called with invalid file path")
-            self.files_df = pd.DataFrame(self.files_dict)
-            return
-
-        actual_files = list(os.listdir(self.file_path))
-        if actual_files and not self.files_df.empty:
-            self.files_df = self.files_df.loc[self.files_df[FILE_NAME].isin(actual_files)]
-        else:
-            self.files_df = pd.DataFrame(self.files_dict)
 
     def validate_file_dataframe(self) -> bool:
         """
@@ -198,6 +163,29 @@ class DataHandler:
 
         logging.debug("dataframe passed validation")
         return True
+
+    def save_data_instance(self) -> None:
+        with open(self.olddata_path,'w') as file:
+            yaml.dump(self.files_df.to_dict(orient="records"),
+                      stream=file,
+                      default_flow_style=False,
+                      sort_keys=False)
+
+    def filter_data(self) -> None:
+        """
+        Removes rows correlating to file names that no longer exist
+        """
+        logging.debug(f"Checking if path exists: {self.file_path} -> {os.path.exists(self.file_path)}")
+        if self.file_path == "" or not os.path.exists(self.file_path):
+            logging.warning("dataHandler.filter_data: called with invalid file path")
+            self.files_df = DEFAULT_DATAFRAME
+            return
+
+        actual_files = list(os.listdir(self.file_path))
+        if actual_files and not self.files_df.empty:
+            self.files_df = self.files_df.loc[self.files_df[FILE_NAME].isin(actual_files)]
+        else:
+            self.files_df = DEFAULT_DATAFRAME
 
     def scan_files(self) -> None:
         """
@@ -229,12 +217,55 @@ class DataHandler:
                 })
                 self.files_df = pd.concat([self.files_df, new_row], ignore_index=True)
 
+
+    def update_row(self, file_data: FileData) -> None:
+        logging.debug(f"updating row {file_data[FILE_NAME]}...")
+
+        matching = self.files_df.loc[self.files_df[FILE_NAME] == file_data[FILE_NAME]]
+        if matching.empty:
+            logging.warning(f"no matching row to update: {file_data[FILE_NAME]}")
+            return
+        row_index = matching.index[0]
+
+        self.files_df.at[row_index, STATUS] = file_data[STATUS]
+        self.files_df.at[row_index, CLIENT_TYPE] = file_data[CLIENT_TYPE]
+        self.files_df.at[row_index, CLIENT_NAME] = file_data[CLIENT_NAME]
+        self.files_df.at[row_index, CLIENT_2_NAME] = file_data[CLIENT_2_NAME]
+        self.files_df.at[row_index, YEAR] = int(file_data[YEAR])
+        self.files_df.at[row_index, DESCRIPTION] = file_data[DESCRIPTION]
+
+        logging.debug(f"New dataframe: {self.files_df.to_string()}")
+        self.save_data_instance()
+
+    def remove_row(self, file_name: str) -> None:
+        raise NotImplementedError
+
+    #UTILITY -----------------------------------------------------------------------------------------------------------
     def update(self) -> None:
         logging.debug("updating...")
         self.load_data_instance()
         self.filter_data()
         self.scan_files()
 
+    def get_data_copy(self) -> pd.DataFrame:
+        logging.debug(f"returning copy of df:\n{self.files_df}")
+        return self.files_df.copy()
+
+    def get_base_directory(self) -> str:
+        logging.debug("returning base directory")
+        return self.resource_path("")
+
+    def resource_path(self, relative_path: str) -> str:
+        """
+        given a relative path (relative to the base directory of the project or exe,
+        return the full path
+        (e.g. C:/Files/Somewhere/SEK FileSorter/TargetThing given relative_path = SEK FileSorter/TargetThing)
+        """
+        base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__))) #path to project directory or where the exe is located
+        logging.debug(f"returning base path: {base_path} merged with relative path: {relative_path}")
+        return os.path.join(base_path, relative_path).replace("\\","/")
+
+    #GETTERS/SETTERS ---------------------------------------------------------------------------------------------------
     def set_file_path(self, path: str) -> None:
         logging.debug(f"set file_path to {path}")
         self.file_path = path
@@ -259,45 +290,9 @@ class DataHandler:
         logging.debug(f"returned browser_path: {self.browser_path}")
         return self.browser_path
 
-    def get_base_directory(self) -> str:
-        logging.debug("returning base directory")
-        return self.resource_path("")
-
-    def resource_path(self, relative_path: str) -> str:
-        """
-        given a relative path (relative to the base directory of the project or exe,
-        return the full path
-        (e.g. C:/Files/Somewhere/SEK FileSorter/TargetThing given relative_path = SEK FileSorter/TargetThing)
-        """
-        base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__))) #path to project directory or where the exe is located
-        logging.debug(f"returning base path: {base_path} merged with relative path: {relative_path}")
-        return os.path.join(base_path, relative_path)
-
     def get_row(self, file_name: str) -> dict | None:
         row = self.files_df.loc[self.files_df[FILE_NAME] == file_name]
         logging.debug(f"returning row:\n{row}")
         if not row.empty:
             return row.iloc[0].apply(lambda x: x.item() if hasattr(x, 'item') else x).to_dict() #cast to pure Python types
         return None
-
-    def update_row(self, file_data: FileData) -> None:
-        logging.debug(f"updating row {file_data[FILE_NAME]}...")
-
-        matching = self.files_df.loc[self.files_df[FILE_NAME] == file_data[FILE_NAME]]
-        if matching.empty:
-            logging.warning(f"no matching row to update: {file_data[FILE_NAME]}")
-            return
-        row_index = matching.index[0]
-
-        self.files_df.at[row_index, STATUS] = file_data[STATUS]
-        self.files_df.at[row_index, CLIENT_TYPE] = file_data[CLIENT_TYPE]
-        self.files_df.at[row_index, CLIENT_NAME] = file_data[CLIENT_NAME]
-        self.files_df.at[row_index, CLIENT_2_NAME] = file_data[CLIENT_2_NAME]
-        self.files_df.at[row_index, YEAR] = int(file_data[YEAR])
-        self.files_df.at[row_index, DESCRIPTION] = file_data[DESCRIPTION]
-
-        logging.debug(f"New dataframe: {self.files_df.to_string()}")
-        self.save_data_instance()
-
-    def remove_row(self, file_name: str) -> None:
-        raise NotImplementedError

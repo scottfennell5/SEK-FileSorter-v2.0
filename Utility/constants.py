@@ -1,4 +1,5 @@
 from typing import TypedDict
+import pandas as pd
 
 #files dataframe
 FILE_NAME = 'File_Name'
@@ -8,6 +9,16 @@ CLIENT_NAME = 'Client_Name'
 CLIENT_2_NAME = 'Client_2_Name'
 YEAR = 'Year'
 DESCRIPTION = 'File_Description'
+
+DEFAULT_DATAFRAME = pd.DataFrame({
+    FILE_NAME:pd.Series(dtype=str),
+    STATUS:pd.Series(dtype=bool),
+    CLIENT_TYPE:pd.Series(dtype=str),
+    CLIENT_NAME:pd.Series(dtype=str),
+    CLIENT_2_NAME:pd.Series(dtype=str),
+    YEAR:pd.Series(dtype=int),
+    DESCRIPTION:pd.Series(dtype=str)
+})
 
 DEFAULT_VALUES = {
     FILE_NAME: "",
@@ -21,6 +32,8 @@ DEFAULT_VALUES = {
 
 CLIENT = "Client"
 BUSINESS = "Business"
+
+INCOME_TAX = "Income Tax"
 
 #settings & file paths
 FILES_ID = "files"
