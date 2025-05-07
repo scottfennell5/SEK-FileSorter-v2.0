@@ -84,6 +84,11 @@ class Controller:
         return self.data_handler.get_base_directory()
 
     def save_row_changes(self, file_data:dict, radio_value:bool) -> List[str]:
+        """
+        Given submitted file data in the form of a dictionary, validate and update the row in files_df
+        Note that in the case that only some columns pass validation, those valid columns will still be updated in files_df
+        radio_value = True if there is a client 2, otherwise False
+        """
         logging.debug(f"row changes submitted for {file_data[FILE_NAME]}, validating...")
 
         valid_data, errors = self.clean_and_validate_row(file_data, radio_value)
@@ -96,6 +101,12 @@ class Controller:
         return errors
 
     def clean_and_validate_row(self, file_data:dict, client2:bool) -> tuple[dict,List[str]]:
+        """
+        Given a row and whether client 2 exists or not, check if each value follows the specified regex format in constants
+        If a given column does not pass validation, set the column's value back to its default value
+        If any columns were not valid, status will be set to False, but if all columns pass, status will be set to True
+        Return a tuple that contains the validated row and a list of columns that need fixed
+        """
         logging.debug(f"validating row: {file_data}")
         errors = []
         cleaned_data = DEFAULT_VALUES.copy()
@@ -139,6 +150,11 @@ class Controller:
         return cleaned_data, errors
 
     def sort_files(self) -> None:
+        """
+        Retrieve and store every row that has STATUS == True (meaning the file is ready to sort)
+        Pass these rows into sorter to be sorted
+        Afterward, call filter_data to filter the now sorted files out of files_df
+        """
         self.data_handler.filter_data()
         data_copy = self.data_handler.get_data_copy()
         files_ready = data_copy.loc[data_copy[STATUS] == True]

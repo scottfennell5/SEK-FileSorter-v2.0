@@ -76,6 +76,10 @@ class DataHandler:
         return True
 
     def save_settings(self) -> None:
+        """
+        Writes currently stored settings to settings.yaml
+        note: will override previously stored settings
+        """
         settings = {
             FILES_ID:self.file_path,
             TARGET_ID:self.target_path
@@ -169,7 +173,7 @@ class DataHandler:
 
     def filter_data(self) -> None:
         """
-        Removes rows correlating to file names that no longer exist
+        Removes rows correlating to file names that no longer exist from self.files_df
         """
         logging.debug(f"Checking if path exists: {self.file_path} -> {os.path.exists(self.file_path)}")
         if self.file_path == "" or not os.path.exists(self.file_path):
@@ -214,6 +218,10 @@ class DataHandler:
                 self.files_df = pd.concat([self.files_df, new_row], ignore_index=True)
 
     def update_row(self, file_data: FileData) -> None:
+        """
+        Given a row of data for a specific file, file_data, replaces the currently stored information with the
+        information given in file_data
+        """
         logging.debug(f"updating row {file_data[FILE_NAME]}...")
 
         matching = self.files_df.loc[self.files_df[FILE_NAME] == file_data[FILE_NAME]]
@@ -239,6 +247,10 @@ class DataHandler:
         self.scan_files()
 
     def open_file(self,file_name) -> str:
+        """
+        Given a file name, attempts to open that file using the default browser specified in the user's windows settings
+        If there are no errors, returns an empty string, otherwise logs and returns the specific error as a string
+        """
         if self.file_path == "":
             error = "File path undefined.\nPlease specify a file path in settings."
             logging.warning(error)
@@ -267,7 +279,7 @@ class DataHandler:
 
     def resource_path(self, relative_path: str) -> str:
         """
-        given a relative path (relative to the base directory of the project or exe,
+        given a relative path (relative to the base directory of the project or exe),
         return the full path
         (e.g. C:/Files/Somewhere/SEK-FileSorter/TargetThing given relative_path = SEK-FileSorter/TargetThing)
         """
@@ -279,11 +291,16 @@ class DataHandler:
             # Running in dev mode
             base_path = os.path.dirname(os.path.abspath(__file__))
             path = os.path.abspath(os.path.join(base_path, "..", relative_path))
+
+        #for consistent formatting
+        base_path = base_path.replace("\\","/")
+        path = path.replace("\\","/")
+
         if relative_path == "":
-            logging.debug(f"returning base path: {base_path}")
+            logging.debug(f"returning base path: '{base_path}'")
         else:
-            logging.debug(f"returning base path: {base_path} merged with relative path: {relative_path} as {path}")
-        return path.replace("\\","/")
+            logging.debug(f"returning base path: '{base_path}' merged with relative path: '{relative_path}' as a full path: '{path}'")
+        return path
 
     def set_file_path(self, path: str) -> None:
         logging.debug(f"set file_path to {path}")
@@ -302,8 +319,12 @@ class DataHandler:
         return self.target_path
 
     def get_row(self, file_name: str) -> dict | None:
+        """
+        Given a file name, return the row of data that file name correlates to
+        Also, cast all column data types to their equivalent Python data types, to avoid NumPy issues
+        """
         row = self.files_df.loc[self.files_df[FILE_NAME] == file_name]
         logging.debug(f"returning row for file: {file_name}")
         if not row.empty:
-            return row.iloc[0].apply(lambda x: x.item() if hasattr(x, 'item') else x).to_dict() #cast to pure Python types
+            return row.iloc[0].apply(lambda x: x.item() if hasattr(x, 'item') else x).to_dict()
         return None
