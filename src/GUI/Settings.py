@@ -1,5 +1,4 @@
 from tkinter import filedialog
-from typing import Any
 
 import customtkinter as ctk
 import os
@@ -7,9 +6,9 @@ from PIL import Image
 from CTkMessagebox import CTkMessagebox
 import logging
 
-from Controller import Controller
-from Utility import ToolTip as ttp
-from Utility.constants import FILES_ID, TARGET_ID, BROWSER_ID
+from src.Controller import Controller
+from src.Utility import ToolTip as ttp
+from src.Utility.constants import FILES_ID, TARGET_ID, BROWSER_ID
 
 IMG_HEIGHT = 30
 IMG_WIDTH = 30

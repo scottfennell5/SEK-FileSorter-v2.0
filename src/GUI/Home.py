@@ -2,9 +2,9 @@ import customtkinter as ctk
 from functools import partial
 import logging
 
-from Controller import Controller
-from GUI.FileInput import FileInput
-from Utility.constants import FILE_NAME, STATUS, CLIENT_NAME, FileData
+from src.Controller import Controller
+from src.GUI.FileInput import FileInput
+from src.Utility.constants import FILE_NAME, STATUS, CLIENT_NAME, FileData, DEFAULT_VALUES
 
 
 class Home(ctk.CTkFrame):
@@ -80,6 +80,8 @@ class Home(ctk.CTkFrame):
         for client in clients:
             #client = (file_name, status, client_name)
             client_name = client[2]
+            if client_name == DEFAULT_VALUES[CLIENT_NAME]:
+                client_name = client[0]
             if len(client_name) > MAX_LENGTH:
                 client_name = client_name[:MAX_LENGTH].rstrip() + "..."
             client_label = ctk.CTkLabel(self.scrollable,text=client_name,corner_radius=0,width=75,

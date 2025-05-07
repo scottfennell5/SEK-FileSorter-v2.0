@@ -1,6 +1,6 @@
 import customtkinter as ctk
 
-from Controller import Controller
+from src.Controller import Controller
 
 
 class Search(ctk.CTkFrame):

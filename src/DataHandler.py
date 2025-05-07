@@ -23,7 +23,6 @@ class DataHandler:
         self.load_settings()
         self.update()
 
-    #SETTINGS ----------------------------------------------------------------------------------------------------------
     def load_settings(self) -> None:
         """
         Attempts to load settings into a dictionary from settings.yaml
@@ -97,7 +96,6 @@ class DataHandler:
         self.browser_path = get_valid_path(BROWSER_ID)
         wb.register(BROWSER_ID,None,wb.BackgroundBrowser(self.browser_path))
 
-    #FILE DATA ---------------------------------------------------------------------------------------------------------
     def load_data_instance(self) -> None:
         """
         Attempts to read olddata.yaml into a dataframe
@@ -209,7 +207,6 @@ class DataHandler:
                 })
                 self.files_df = pd.concat([self.files_df, new_row], ignore_index=True)
 
-
     def update_row(self, file_data: FileData) -> None:
         logging.debug(f"updating row {file_data[FILE_NAME]}...")
 
@@ -229,7 +226,6 @@ class DataHandler:
         logging.debug(f"New dataframe: {self.files_df.to_string()}")
         self.save_data_instance()
 
-    #UTILITY -----------------------------------------------------------------------------------------------------------
     def update(self) -> None:
         logging.debug("updating...")
         self.load_data_instance()
@@ -277,7 +273,6 @@ class DataHandler:
         logging.debug(f"returning base path: {base_path} merged with relative path: {relative_path}")
         return os.path.join(base_path, relative_path).replace("\\","/")
 
-    #GETTERS/SETTERS ---------------------------------------------------------------------------------------------------
     def set_file_path(self, path: str) -> None:
         logging.debug(f"set file_path to {path}")
         self.file_path = path

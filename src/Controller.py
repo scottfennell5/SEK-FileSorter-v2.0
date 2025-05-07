@@ -14,12 +14,12 @@ from Utility.constants import (
 
 class Controller:
 
-    def __init__(self):
+    def __init__(self, data_handler:DataHandler|None = None, sorter:Sorter | None = None):
         logging.debug("Init Controller")
-        self.dataHandler = DataHandler()
-        self.sorter = Sorter(file_path=self.dataHandler.get_file_path(),
-                             target_path=self.dataHandler.get_target_path())
-        self.observers = [self.dataHandler, self.sorter]
+        self.data_handler = data_handler or DataHandler()
+        self.sorter = sorter or Sorter(file_path=self.data_handler.get_file_path(),
+                                       target_path=self.data_handler.get_target_path())
+        self.observers = [self.data_handler, self.sorter]
 
     def new_observer(self, observer: DataHandler | Sorter) -> None:
         self.observers.append(observer)
@@ -39,20 +39,20 @@ class Controller:
             observer.update()
 
     def get_data_copy(self) -> pd.DataFrame:
-        return self.dataHandler.get_data_copy()
+        return self.data_handler.get_data_copy()
 
     def get_row(self, file_name:str) -> FileData:
-        return self.dataHandler.get_row(file_name)
+        return self.data_handler.get_row(file_name)
 
     def open_file(self, file_name:str) -> str:
-        error_msg = self.dataHandler.open_file(file_name)
+        error_msg = self.data_handler.open_file(file_name)
         return error_msg
 
     def get_path(self, pathID:str) -> str:
         path_map = {
-            FILES_ID: self.dataHandler.get_file_path(),
-            TARGET_ID: self.dataHandler.get_target_path(),
-            BROWSER_ID: self.dataHandler.get_browser_path()
+            FILES_ID: self.data_handler.get_file_path(),
+            TARGET_ID: self.data_handler.get_target_path(),
+            BROWSER_ID: self.data_handler.get_browser_path()
         }
         path = path_map.get(pathID)
         if path is None:
@@ -67,7 +67,7 @@ class Controller:
         path_setters = {
             FILES_ID: self.set_observer_filepath,
             TARGET_ID: self.set_observer_targetpath,
-            BROWSER_ID: self.dataHandler.set_browser_path
+            BROWSER_ID: self.data_handler.set_browser_path
         }
 
         setter = path_setters.get(pathID)
@@ -77,13 +77,13 @@ class Controller:
             logging.error(f"Invalid pathID: {pathID}")
 
     def save_settings(self) -> None:
-        self.dataHandler.save_settings()
+        self.data_handler.save_settings()
 
     def get_resource_path(self, relative_path:str) -> str:
-        return self.dataHandler.resource_path(relative_path)
+        return self.data_handler.resource_path(relative_path)
 
     def get_base_directory(self) -> str:
-        return self.dataHandler.get_base_directory()
+        return self.data_handler.get_base_directory()
 
     def save_row_changes(self, file_data:dict, radio_value:bool) -> List[str]:
         logging.debug(f"row changes submitted for {file_data[FILE_NAME]}, validating...")
@@ -94,7 +94,7 @@ class Controller:
             logging.debug(f"data passed validation!")
         else:
             logging.debug(f"errors: {errors}")
-        self.dataHandler.update_row(valid_data)
+        self.data_handler.update_row(valid_data)
         return errors
 
     def clean_and_validate_row(self, file_data:dict, client2:bool) -> tuple[dict,List[str]]:
@@ -104,7 +104,11 @@ class Controller:
         cleaned_data[FILE_NAME] = file_data[FILE_NAME]
         cleaned_data[CLIENT_TYPE] = file_data[CLIENT_TYPE]
 
-        validator = NAME_VALIDATORS[cleaned_data[CLIENT_TYPE]]
+        try:
+            validator = NAME_VALIDATORS[cleaned_data[CLIENT_TYPE]]
+        except KeyError:
+            logging.warning(f"invalid client type '{cleaned_data[CLIENT_TYPE]}'")
+            return file_data, ["Client Type"]
 
         name = file_data[CLIENT_NAME]
         name2 = file_data[CLIENT_2_NAME]
@@ -137,9 +141,9 @@ class Controller:
         return cleaned_data, errors
 
     def sort_files(self) -> None:
-        self.dataHandler.filter_data()
-        data_copy = self.dataHandler.get_data_copy()
+        self.data_handler.filter_data()
+        data_copy = self.data_handler.get_data_copy()
         files_ready = data_copy.loc[data_copy[STATUS] == True]
         logging.debug(f"The following files are ready for sorting:\n{files_ready.to_string()}")
         self.sorter.sort_files(files_ready)
-        self.dataHandler.filter_data()
+        self.data_handler.filter_data()
