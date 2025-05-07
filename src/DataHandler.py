@@ -8,20 +8,28 @@ import logging
 
 from Utility.constants import (
     FILE_NAME, STATUS, CLIENT_TYPE, CLIENT_NAME, CLIENT_2_NAME, YEAR, DESCRIPTION,
-    FILES_ID, TARGET_ID, BROWSER_ID,
+    FILES_ID, TARGET_ID,
     DEFAULT_VALUES, DEFAULT_SETTINGS, DEFAULT_DATAFRAME, FileData)
 
 class DataHandler:
     def __init__(self):
         logging.debug("Init Datahandler")
         self.files_df = DEFAULT_DATAFRAME
+        self.init_directories()
         self.olddata_path = self.resource_path(r"PersistentData/Data/olddata.yaml")
         self.settings_path = self.resource_path(r"PersistentData/Data/settings.yaml")
         self.file_path = ""
         self.target_path = ""
-        self.browser_path = ""
         self.load_settings()
         self.update()
+
+    def init_directories(self):
+        """
+        Initialize any critical directories before app is run
+        """
+        full_data_path = os.path.join(self.get_base_directory(),
+                                      "PersistentData/Data/")
+        os.makedirs(full_data_path, exist_ok=True)
 
     def load_settings(self) -> None:
         """
@@ -69,8 +77,7 @@ class DataHandler:
     def save_settings(self) -> None:
         settings = {
             FILES_ID:self.file_path,
-            TARGET_ID:self.target_path,
-            BROWSER_ID:self.browser_path
+            TARGET_ID:self.target_path
         }
 
         logging.debug(f"saving settings: {settings} to {self.settings_path}")
@@ -93,8 +100,6 @@ class DataHandler:
 
         self.file_path = get_valid_path(FILES_ID)
         self.target_path = get_valid_path(TARGET_ID)
-        self.browser_path = get_valid_path(BROWSER_ID)
-        wb.register(BROWSER_ID,None,wb.BackgroundBrowser(self.browser_path))
 
     def load_data_instance(self) -> None:
         """
@@ -237,19 +242,15 @@ class DataHandler:
             error = "File path undefined.\nPlease specify a file path in settings."
             logging.warning(error)
             return error
-        if self.browser_path == "":
-            error = "Browser path undefined.\nPlease specify a browser in settings."
-            logging.warning(error)
-            return error
         full_path = os.path.join(self.file_path, file_name)
         if os.path.exists(full_path):
             new = 2 #open in new tab
             try:
-                wb.get(BROWSER_ID).open(f"file://{full_path}", new=new)
+                wb.open(f"file://{full_path}", new=new)
                 return ""
             except wb.Error as e:
                 logging.warning(f"failed to open with browser: {e}")
-                return "Failed to open with provided browser path.\nTry setting another path in settings."
+                return "Failed to open with default browser,\nPlease check your computer's default browser settings."
         else:
             error = f"File {file_name} not found!"
             logging.info(error)
@@ -270,7 +271,10 @@ class DataHandler:
         (e.g. C:/Files/Somewhere/SEK FileSorter/TargetThing given relative_path = SEK FileSorter/TargetThing)
         """
         base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__))) #path to project directory or where the exe is located
-        logging.debug(f"returning base path: {base_path} merged with relative path: {relative_path}")
+        if relative_path == "":
+            logging.debug(f"returning base path: {base_path}")
+        else:
+            logging.debug(f"returning base path: {base_path} merged with relative path: {relative_path}")
         return os.path.join(base_path, relative_path).replace("\\","/")
 
     def set_file_path(self, path: str) -> None:
@@ -289,18 +293,9 @@ class DataHandler:
         logging.debug(f"returned target_path: {self.target_path}")
         return self.target_path
 
-    def set_browser_path(self, path: str) -> None:
-        logging.debug(f"set browser_path to {path}")
-        self.browser_path = path
-        wb.register(BROWSER_ID,None,wb.BackgroundBrowser(self.browser_path))
-
-    def get_browser_path(self) -> str:
-        logging.debug(f"returned browser_path: {self.browser_path}")
-        return self.browser_path
-
     def get_row(self, file_name: str) -> dict | None:
         row = self.files_df.loc[self.files_df[FILE_NAME] == file_name]
-        logging.debug(f"returning row:\n{row}")
+        logging.debug(f"returning row for file: {file_name}")
         if not row.empty:
             return row.iloc[0].apply(lambda x: x.item() if hasattr(x, 'item') else x).to_dict() #cast to pure Python types
         return None

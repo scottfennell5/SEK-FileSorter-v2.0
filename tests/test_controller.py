@@ -6,7 +6,7 @@ import pandas as pd
 from src.Controller import Controller
 from src.Utility.constants import (
     FILE_NAME, STATUS, CLIENT_NAME, CLIENT_2_NAME, CLIENT_TYPE, YEAR, DESCRIPTION,
-    FILES_ID, TARGET_ID, BROWSER_ID, CLIENT
+    FILES_ID, TARGET_ID, CLIENT
 )
 
 @pytest.fixture
@@ -42,7 +42,6 @@ def test_get_path_valid(controller):
     controller.data_handler.get_browser_path.return_value = "/browser"
     assert controller.get_path(FILES_ID) == "/file"
     assert controller.get_path(TARGET_ID) == "/target"
-    assert controller.get_path(BROWSER_ID) == "/browser"
 
 def test_get_path_invalid_logs_error(controller, caplog):
     caplog.set_level("ERROR")

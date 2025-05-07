@@ -7,7 +7,7 @@ from Sorter import Sorter
 from DataHandler import DataHandler
 from Utility.constants import (
     FILE_NAME, STATUS, CLIENT_TYPE, CLIENT_NAME, CLIENT_2_NAME, YEAR, DESCRIPTION, #indexes
-    FILES_ID, TARGET_ID, BROWSER_ID,
+    FILES_ID, TARGET_ID,
     NAME_VALIDATORS, VALID_YEAR, DEFAULT_VALUES,
     FileData #type hinting
 )
@@ -51,8 +51,7 @@ class Controller:
     def get_path(self, pathID:str) -> str:
         path_map = {
             FILES_ID: self.data_handler.get_file_path(),
-            TARGET_ID: self.data_handler.get_target_path(),
-            BROWSER_ID: self.data_handler.get_browser_path()
+            TARGET_ID: self.data_handler.get_target_path()
         }
         path = path_map.get(pathID)
         if path is None:
@@ -66,8 +65,7 @@ class Controller:
             return
         path_setters = {
             FILES_ID: self.set_observer_filepath,
-            TARGET_ID: self.set_observer_targetpath,
-            BROWSER_ID: self.data_handler.set_browser_path
+            TARGET_ID: self.set_observer_targetpath
         }
 
         setter = path_setters.get(pathID)

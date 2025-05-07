@@ -53,7 +53,7 @@ class Home(ctk.CTkFrame):
             widget.destroy()
 
         files = self.controller.get_data_copy()
-        logging.debug(f"files:\n{files.to_string()}")
+        logging.debug(f"populating table with {len(files)} files")
         if files.empty or files is None:
             label = ctk.CTkLabel(self.scrollable, text="No files detected! \n\n\nIf you expected files here, \nmake sure the Client Directory path in 'Settings' is correct.")
             label.grid(row=0,column=0,padx=8,pady=5,sticky='new')

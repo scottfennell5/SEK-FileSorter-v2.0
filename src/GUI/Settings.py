@@ -8,7 +8,7 @@ import logging
 
 from src.Controller import Controller
 from src.Utility import ToolTip as ttp
-from src.Utility.constants import FILES_ID, TARGET_ID, BROWSER_ID
+from src.Utility.constants import FILES_ID, TARGET_ID
 
 IMG_HEIGHT = 30
 IMG_WIDTH = 30
@@ -21,7 +21,6 @@ class Settings(ctk.CTkFrame):
         self.controller = controller
         self.file_path = self.controller.get_path(FILES_ID)
         self.target_path = self.controller.get_path(TARGET_ID)
-        self.browser_path = self.controller.get_path(BROWSER_ID)
         self.pending_changes = False
         self.grid_columnconfigure(0,weight=1)
 
@@ -93,14 +92,6 @@ class Settings(ctk.CTkFrame):
             view_command=lambda: self.view_directory(self.target_path)
         )
 
-        create_path_setting(
-            row=2,
-            label_text="Browser:",
-            path=self.browser_path,
-            path_id=BROWSER_ID,
-            image=None
-        )
-
     def populate_footer(self) -> None:
         for widget in self.footer.winfo_children():
             widget.destroy()
@@ -137,11 +128,8 @@ class Settings(ctk.CTkFrame):
             print(f"attempt to open path: {path} failed, invalid path")
 
     def change_directory(self, pathID:str) -> None:
-        if pathID == BROWSER_ID:
-            path = filedialog.askopenfilename(title="Select the EXE file for your browser",filetypes=[("Executables","*.exe")])
-        else:
-            path = filedialog.askdirectory(initialdir=self.controller.get_base_directory(),
-                                           title=f"Please select the directory you would like to change {pathID} to.")
+        path = filedialog.askdirectory(initialdir=self.controller.get_base_directory(),
+                                       title=f"Please select the directory you would like to change {pathID} to.")
 
         if path == "":
             logging.debug("path is empty, no action taken")
@@ -159,8 +147,6 @@ class Settings(ctk.CTkFrame):
                               message="Error: Client directory cannot be the same as Scanned Files directory! \nPlease choose a new path.")
             else:
                 self.target_path = path
-        elif pathID == BROWSER_ID:
-            self.browser_path = path
         self.pending_changes = True
         self.update()
 
@@ -170,10 +156,7 @@ class Settings(ctk.CTkFrame):
             self.controller.set_path(FILES_ID, self.file_path)
         if self.target_path != "":
             logging.debug(f"setting target_path to {self.target_path}")
-            self.controller.set_path(TARGET_ID, self.target_path)
-        if self.browser_path != "":
-            logging.debug(f"setting browser_path to {self.browser_path}")
-            self.controller.set_path(BROWSER_ID, self.browser_path)
+            self.controller.set_path(TARGET_ID, self.target_path)\
 
         self.controller.save_settings()
         self.pending_changes = False
@@ -182,6 +165,5 @@ class Settings(ctk.CTkFrame):
     def cancel_changes(self) -> None:
         self.file_path = self.controller.get_path(FILES_ID)
         self.target_path = self.controller.get_path(TARGET_ID)
-        self.browser_path = self.controller.get_path(BROWSER_ID)
         self.pending_changes = False
         self.update()

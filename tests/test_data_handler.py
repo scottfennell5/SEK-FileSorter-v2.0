@@ -10,7 +10,7 @@ from src.Utility.constants import (
     FILE_NAME, STATUS, CLIENT_NAME, CLIENT_2_NAME,
     CLIENT_TYPE, YEAR, DESCRIPTION, DEFAULT_VALUES,
     DEFAULT_DATAFRAME, DEFAULT_SETTINGS, FileData,
-    FILES_ID, TARGET_ID, BROWSER_ID
+    FILES_ID, TARGET_ID
 )
 
 
@@ -24,8 +24,7 @@ def temp_data_handler(tmp_path):
 def test_validate_settings_valid(temp_data_handler):
     valid = {
         FILES_ID: "/some/path",
-        TARGET_ID: "/another/path",
-        BROWSER_ID: "/browser/path"
+        TARGET_ID: "/another/path"
     }
     assert temp_data_handler.validate_settings(valid)
 
@@ -40,13 +39,11 @@ def test_validate_settings_unexpected_key(temp_data_handler):
 def test_apply_settings_invalid_paths(temp_data_handler):
     settings = {
         FILES_ID: "/nonexistent1",
-        TARGET_ID: "/nonexistent2",
-        BROWSER_ID: "/nonexistent3"
+        TARGET_ID: "/nonexistent2"
     }
     temp_data_handler.apply_settings(settings)
     assert temp_data_handler.file_path == ""
     assert temp_data_handler.target_path == ""
-    assert temp_data_handler.browser_path == ""
 
 def test_save_and_load_settings(tmp_path):
     with patch.object(DataHandler, 'resource_path', side_effect=lambda rel: tmp_path / os.path.basename(rel)):
@@ -62,11 +59,18 @@ def test_save_and_load_settings(tmp_path):
         assert settings[FILES_ID] == "/files"
 
 def test_load_data_instance_creates_empty_if_missing(tmp_path):
-    path = tmp_path / "olddata.yaml"
-    with patch.object(DataHandler, 'resource_path', return_value=str(path)):
-        handler = DataHandler()
-        handler.load_data_instance()
-        assert isinstance(handler.files_df, pd.DataFrame)
+    data_path = tmp_path / "olddata.yaml"
+
+    handler = DataHandler.__new__(DataHandler)  # bypass __init__
+    handler.olddata_path = str(data_path)
+    handler.files_df = None
+
+    handler.validate_file_dataframe = lambda: True
+
+    handler.load_data_instance()
+
+    assert data_path.exists()
+    assert handler.files_df.equals(DEFAULT_DATAFRAME)
 
 def test_validate_file_dataframe_good(temp_data_handler):
     df = pd.DataFrame([DEFAULT_VALUES])
@@ -94,12 +98,6 @@ def test_open_file_path_undefined(temp_data_handler):
     temp_data_handler.file_path = ""
     result = temp_data_handler.open_file("foo.pdf")
     assert "File path undefined" in result
-
-def test_open_file_browser_undefined(temp_data_handler):
-    temp_data_handler.file_path = "/"
-    temp_data_handler.browser_path = ""
-    result = temp_data_handler.open_file("foo.pdf")
-    assert "Browser path undefined" in result
 
 def test_get_row_returns_correct_data(temp_data_handler):
     row = {**DEFAULT_VALUES, FILE_NAME: "abc.pdf", CLIENT_NAME: "Jane"}
