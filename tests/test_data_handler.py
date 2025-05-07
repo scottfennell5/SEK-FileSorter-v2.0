@@ -1,16 +1,14 @@
 import os
-import tempfile
 import yaml
 import pandas as pd
 import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
-from src.DataHandler import DataHandler
+from Core.DataHandler import DataHandler
 from src.Utility.constants import (
     FILE_NAME, STATUS, CLIENT_NAME, CLIENT_2_NAME,
     CLIENT_TYPE, YEAR, DESCRIPTION, DEFAULT_VALUES,
-    DEFAULT_DATAFRAME, DEFAULT_SETTINGS, FileData,
-    FILES_ID, TARGET_ID
+    DEFAULT_DATAFRAME, DEFAULT_SETTINGS, FILES_ID, TARGET_ID
 )
 
 

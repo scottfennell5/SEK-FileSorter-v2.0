@@ -6,9 +6,9 @@ from PIL import Image
 from CTkMessagebox import CTkMessagebox
 import logging
 
-from src.Controller import Controller
-from src.Utility import ToolTip as ttp
-from src.Utility.constants import FILES_ID, TARGET_ID
+from Core.Controller import Controller
+from Utility.ToolTip import ToolTip as ttp
+from Utility.constants import FILES_ID, TARGET_ID
 
 IMG_HEIGHT = 30
 IMG_WIDTH = 30
@@ -128,7 +128,7 @@ class Settings(ctk.CTkFrame):
             print(f"attempt to open path: {path} failed, invalid path")
 
     def change_directory(self, pathID:str) -> None:
-        path = filedialog.askdirectory(initialdir=self.controller.get_base_directory(),
+        path = filedialog.askdirectory(initialdir="C:\\",
                                        title=f"Please select the directory you would like to change {pathID} to.")
 
         if path == "":

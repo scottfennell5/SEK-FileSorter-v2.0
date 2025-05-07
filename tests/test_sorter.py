@@ -1,9 +1,9 @@
 import os
 import pandas as pd
 import pytest
-from unittest.mock import patch, MagicMock, call
+from unittest.mock import patch
 
-from src.Sorter import Sorter  # Replace with actual import
+from Core.Sorter import Sorter  # Replace with actual import
 from src.Utility.constants import (
     FILE_NAME, CLIENT_TYPE, CLIENT_NAME, CLIENT_2_NAME, YEAR, DESCRIPTION,
     CLIENT, BUSINESS, INCOME_TAX

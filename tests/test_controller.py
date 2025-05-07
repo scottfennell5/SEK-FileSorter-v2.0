@@ -1,9 +1,8 @@
 # test_controller.py
 import pytest
 from unittest.mock import MagicMock, patch
-import pandas as pd
 
-from src.Controller import Controller
+from Core.Controller import Controller
 from src.Utility.constants import (
     FILE_NAME, STATUS, CLIENT_NAME, CLIENT_2_NAME, CLIENT_TYPE, YEAR, DESCRIPTION,
     FILES_ID, TARGET_ID, CLIENT

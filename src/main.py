@@ -3,10 +3,9 @@ from datetime import datetime, timedelta
 import logging
 import os
 import sys
-import yaml
 
-from Controller import Controller
-from GUI_Root import FileSorter
+from Core.Controller import Controller
+from Core.GUI_Root import FileSorter
 
 def cleanup_logs(log_root:str, days_to_keep:int = 30) -> None:
     cutoff_date = datetime.now() - timedelta(days=days_to_keep)

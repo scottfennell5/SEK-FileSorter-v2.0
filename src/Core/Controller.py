@@ -3,8 +3,8 @@ import re
 from typing import List
 import pandas as pd
 
-from Sorter import Sorter
-from DataHandler import DataHandler
+from Core.Sorter import Sorter
+from Core.DataHandler import DataHandler
 from Utility.constants import (
     FILE_NAME, STATUS, CLIENT_TYPE, CLIENT_NAME, CLIENT_2_NAME, YEAR, DESCRIPTION, #indexes
     FILES_ID, TARGET_ID,

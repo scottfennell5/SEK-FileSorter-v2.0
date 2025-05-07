@@ -1,6 +1,6 @@
 import customtkinter as ctk
 
-from src.Controller import Controller
+from Core.Controller import Controller
 
 
 class Menu(ctk.CTkFrame):

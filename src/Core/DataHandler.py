@@ -50,6 +50,7 @@ class DataHandler:
             logging.warning(f"unexpected error reading settings.yaml: {e}")
 
         logging.info("generating new settings.yaml")
+        print(self.settings_path)
         with open(self.settings_path, 'w') as file:
             yaml.dump(DEFAULT_SETTINGS, file, default_flow_style=False)
 
@@ -268,14 +269,21 @@ class DataHandler:
         """
         given a relative path (relative to the base directory of the project or exe,
         return the full path
-        (e.g. C:/Files/Somewhere/SEK FileSorter/TargetThing given relative_path = SEK FileSorter/TargetThing)
+        (e.g. C:/Files/Somewhere/SEK-FileSorter/TargetThing given relative_path = SEK-FileSorter/TargetThing)
         """
-        base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__))) #path to project directory or where the exe is located
+        if hasattr(sys, '_MEIPASS'):
+            # Running in PyInstaller bundle
+            base_path = sys._MEIPASS
+            path = os.path.join(base_path, relative_path)
+        else:
+            # Running in dev mode
+            base_path = os.path.dirname(os.path.abspath(__file__))
+            path = os.path.abspath(os.path.join(base_path, "..", relative_path))
         if relative_path == "":
             logging.debug(f"returning base path: {base_path}")
         else:
-            logging.debug(f"returning base path: {base_path} merged with relative path: {relative_path}")
-        return os.path.join(base_path, relative_path).replace("\\","/")
+            logging.debug(f"returning base path: {base_path} merged with relative path: {relative_path} as {path}")
+        return path.replace("\\","/")
 
     def set_file_path(self, path: str) -> None:
         logging.debug(f"set file_path to {path}")

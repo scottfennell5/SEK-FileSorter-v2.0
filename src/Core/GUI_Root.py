@@ -1,10 +1,9 @@
 import customtkinter as ctk
 import logging
 
-from Controller import Controller
+from Core.Controller import Controller
 from GUI.Menu import Menu
 from GUI.Home import Home
-from GUI.Search import Search
 from GUI.Settings import Settings
 from GUI.Help import Help
 

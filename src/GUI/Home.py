@@ -2,9 +2,9 @@ import customtkinter as ctk
 from functools import partial
 import logging
 
-from src.Controller import Controller
-from src.GUI.FileInput import FileInput
-from src.Utility.constants import FILE_NAME, STATUS, CLIENT_NAME, FileData, DEFAULT_VALUES
+from Core.Controller import Controller
+from GUI.FileInput import FileInput
+from Utility.constants import FILE_NAME, STATUS, CLIENT_NAME, FileData, DEFAULT_VALUES
 
 
 class Home(ctk.CTkFrame):

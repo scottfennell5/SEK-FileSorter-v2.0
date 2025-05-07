@@ -4,8 +4,8 @@ from typing import Any
 import customtkinter as ctk
 import tkinter as tk
 
-from src.Controller import Controller
-from src.Utility.constants import (
+from Core.Controller import Controller
+from Utility.constants import (
     FILE_NAME, STATUS, CLIENT_TYPE, CLIENT_NAME, CLIENT_2_NAME, YEAR, DESCRIPTION,
     CLIENT, BUSINESS,
     FileData)
