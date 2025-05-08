@@ -2,7 +2,7 @@
 import pytest
 from unittest.mock import MagicMock, patch
 
-from Core.Controller import Controller
+from src.Core.Controller import Controller
 from src.Utility.constants import (
     FILE_NAME, STATUS, CLIENT_NAME, CLIENT_2_NAME, CLIENT_TYPE, YEAR, DESCRIPTION,
     FILES_ID, TARGET_ID, CLIENT
@@ -10,8 +10,8 @@ from src.Utility.constants import (
 
 @pytest.fixture
 def controller():
-    with patch("src.Controller.DataHandler") as MockDataHandler, \
-         patch("src.Controller.Sorter") as MockSorter:
+    with patch("src.Core.Controller.DataHandler") as MockDataHandler, \
+         patch("src.Core.Controller.Sorter") as MockSorter:
         mock_datahandler = MockDataHandler.return_value
         mock_sorter = MockSorter.return_value
         return Controller(mock_datahandler, mock_sorter)

@@ -5,6 +5,8 @@ import logging
 from Core.Controller import Controller
 from GUI.FileInput import FileInput
 from Utility.constants import FILE_NAME, STATUS, CLIENT_NAME, FileData, DEFAULT_VALUES
+from Utility.style import style_button, style_label_header, style_status_complete, style_status_incomplete, \
+    style_sub_frame, style_label_body, style_invisible_frame
 
 
 class Home(ctk.CTkFrame):
@@ -15,12 +17,12 @@ class Home(ctk.CTkFrame):
         self.grid_rowconfigure(0, weight=0)
         self.grid_rowconfigure(1, weight=1)
 
-        self.header = ctk.CTkFrame(self,corner_radius=5,fg_color="#1E1E1E")
+        self.header = ctk.CTkFrame(self,**style_invisible_frame)
         self.populate_header()
         self.header.grid_columnconfigure(0, weight=1)
         self.header.grid(row=0,column=0,padx=5,pady=5,sticky='w')
 
-        self.scrollable = ctk.CTkScrollableFrame(self, corner_radius=0,fg_color="#1E1E1E")
+        self.scrollable = ctk.CTkScrollableFrame(self, corner_radius=0,fg_color="transparent")
         self.scrollable.grid_columnconfigure(0, weight=4)
         self.scrollable.grid_columnconfigure(1, weight=1)
         self.scrollable.grid_columnconfigure(2, weight=1)
@@ -29,21 +31,19 @@ class Home(ctk.CTkFrame):
 
     def populate_header(self) -> None:
         col = 0
-        header_label = ctk.CTkLabel(self.header, text="Home",font=("Bold", 30),corner_radius=0,width=75,justify="left",anchor="w")
+        header_label = ctk.CTkLabel(self.header, text="Home",**style_label_header)
         header_label.pack(side=ctk.LEFT,padx=(8,150),pady=(5,2))
         col += 1
 
-        button_frame = ctk.CTkFrame(self.header, fg_color="transparent")
+        button_frame = ctk.CTkFrame(self.header, **style_invisible_frame)
         button_frame.pack(side=ctk.RIGHT, fill="x",expand=True, padx=8, pady=(5,2))
 
-        sort_button = ctk.CTkButton(button_frame, text="Sort", width=125,
-                                    fg_color="#1E1E1E", text_color="#BB86FC", hover_color="#2E2E2E",
+        sort_button = ctk.CTkButton(button_frame, text="Sort", **style_button, width=125,
                                     command=lambda: self.sort())
         sort_button.pack(side=ctk.RIGHT, padx=4)
         col += 1
 
-        refresh_button = ctk.CTkButton(button_frame, text="Refresh Data", width=125,
-                                       fg_color="#1E1E1E", text_color="#BB86FC", hover_color="#2E2E2E",
+        refresh_button = ctk.CTkButton(button_frame, text="Refresh Data", **style_button, width=125,
                                        command=lambda : self.update())
         refresh_button.pack(side=ctk.RIGHT,padx=4)
         col += 1
@@ -64,18 +64,6 @@ class Home(ctk.CTkFrame):
 
         MAX_LENGTH = 30
 
-        STATUS_COMPLETE_STYLE = {
-            "text": "Complete",
-            "fg_color": "#388E3C",
-            "text_color": "#E0E0E0"
-        }
-
-        STATUS_INCOMPLETE_STYLE = {
-            "text": "Incomplete",
-            "fg_color": "#D97925",
-            "text_color": "#E0E0E0"
-        }
-
         row = 0
         for client in clients:
             #client = (file_name, status, client_name)
@@ -84,24 +72,21 @@ class Home(ctk.CTkFrame):
                 client_name = client[0]
             if len(client_name) > MAX_LENGTH:
                 client_name = client_name[:MAX_LENGTH].rstrip() + "..."
-            client_label = ctk.CTkLabel(self.scrollable,text=client_name,corner_radius=0,width=75,
-                                  text_color="#d1cfcf",
-                                  justify="left",anchor="w")
+            client_label = ctk.CTkLabel(self.scrollable, text=client_name, **style_label_body)
             client_label.grid(row=row+1,column=0,padx=(8,0),pady=5,sticky='w')
 
-            style = STATUS_COMPLETE_STYLE if client[1] else STATUS_INCOMPLETE_STYLE
-            status_label = ctk.CTkLabel(self.scrollable, **style,corner_radius=5, width=50,justify="left", anchor="w")
+            style = style_status_complete if client[1] else style_status_incomplete
+            status_label = ctk.CTkLabel(self.scrollable, **style, corner_radius=5, width=50,justify="left", anchor="w")
             status_label.grid(row=row+1, column=1, pady=5, sticky='w')
 
-            open_button = ctk.CTkButton(self.scrollable, text="Open File", width=125,
-                                        fg_color="#2C2C2C", text_color="#BB86FC", hover_color="#2E2E2E",
+            open_button = ctk.CTkButton(self.scrollable, text="Open File", **style_button, width=125,
                                         command=partial(self.open_file, self.controller.get_row(client[0])))
             open_button.grid(row=row+1,column=2,pady=5,sticky='w')
 
             row += 1
 
     def open_file(self, file_data:FileData) -> None:
-        inputOverlay = FileInput(self.controller, file_data, self, fg_color="#1E1E1E", corner_radius=5)
+        inputOverlay = FileInput(self.controller, file_data, self, **style_sub_frame)
 
         start_y = 1.0
         target_y = 0.0

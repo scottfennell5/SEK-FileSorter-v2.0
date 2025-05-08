@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 from unittest.mock import patch
 
-from Core.DataHandler import DataHandler
+from src.Core.DataHandler import DataHandler
 from src.Utility.constants import (
     FILE_NAME, STATUS, CLIENT_NAME, CLIENT_2_NAME,
     CLIENT_TYPE, YEAR, DESCRIPTION, DEFAULT_VALUES,

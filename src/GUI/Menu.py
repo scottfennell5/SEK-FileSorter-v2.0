@@ -1,10 +1,12 @@
 import customtkinter as ctk
 
 from Core.Controller import Controller
+from Core.GUI_Root import FileSorter
+from Utility.style import style_main_menu_button
 
 
 class Menu(ctk.CTkFrame):
-    def __init__(self, controller:Controller, master:ctk.CTkBaseClass, **kwargs):
+    def __init__(self, controller:Controller, master:FileSorter, **kwargs):
         super().__init__(master, **kwargs)
         self.controller = controller
         self.grid_columnconfigure(0, weight=1)
@@ -16,17 +18,6 @@ class Menu(ctk.CTkFrame):
             ("Help", lambda : master.set_window("help"))
         ]
 
-        BUTTON_STYLE = {
-            "font": ("Bold", 40),
-            "corner_radius": 0,
-            "height": 50,
-            "anchor": "w",
-            "fg_color": "#1E1E1E",
-            "bg_color": "transparent",
-            "text_color": "#d1cfcf",
-            "hover_color": "#7e4694"
-        }
-
         for i, (text, cmd) in enumerate(buttons):
-            (ctk.CTkButton(self, text=text, border_spacing=2, command=cmd, **BUTTON_STYLE)
+            (ctk.CTkButton(self, text=text, **style_main_menu_button, command=cmd)
             .grid(row=i, column=0, pady=20, sticky='ew'))
