@@ -1,6 +1,7 @@
 import logging
 import os
 import pandas as pd
+from CTkMessagebox import CTkMessagebox
 
 from Utility.constants import (
     FILE_NAME, CLIENT_TYPE, CLIENT_NAME, CLIENT_2_NAME, YEAR, DESCRIPTION,
@@ -42,6 +43,8 @@ class Sorter:
             return
         if not os.path.exists(self.target_path):
             logging.info("sort called without valid target path")
+            CTkMessagebox(title="Error", icon="warning",
+                          message="Error: Sorter needs a valid target path. \nPlease select a path in Settings.")
             return
 
         files_to_sort.set_index(FILE_NAME, inplace=True)
@@ -82,6 +85,8 @@ class Sorter:
             sorted_files.append(file_name)
 
         logging.debug(f"file sorting complete, files sorted: {sorted_files}")
+        CTkMessagebox(title="Success", icon="check",
+                      message="All completed files were successfully sorted!")
         return
 
     def create_client_directory(self, name:str, name_2:str) -> str:

@@ -1,12 +1,12 @@
 import customtkinter as ctk
+from customtkinter import CTkBaseClass
 
 from Core.Controller import Controller
-from Core.GUI_Root import FileSorter
 from Utility.style import style_main_menu_button
 
 
 class Menu(ctk.CTkFrame):
-    def __init__(self, controller:Controller, master:FileSorter, **kwargs):
+    def __init__(self, controller:Controller, master:CTkBaseClass, **kwargs):
         super().__init__(master, **kwargs)
         self.controller = controller
         self.grid_columnconfigure(0, weight=1)

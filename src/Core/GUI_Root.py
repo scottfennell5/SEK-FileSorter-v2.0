@@ -9,7 +9,6 @@ from GUI.Settings import Settings
 from GUI.Help import Help
 from Utility.style import style_sub_frame
 
-
 class FileSorter(ctk.CTk):
     def __init__(self, controller:Controller):
         super().__init__()

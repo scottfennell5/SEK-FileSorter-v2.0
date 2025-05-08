@@ -2,6 +2,7 @@ import logging
 import re
 from typing import List
 import pandas as pd
+from CTkMessagebox import CTkMessagebox
 
 from Core.Sorter import Sorter
 from Core.DataHandler import DataHandler
@@ -158,6 +159,11 @@ class Controller:
         self.data_handler.filter_data()
         data_copy = self.data_handler.get_data_copy()
         files_ready = data_copy.loc[data_copy[STATUS] == True]
-        logging.debug(f"The following files are ready for sorting:\n{files_ready.to_string()}")
-        self.sorter.sort_files(files_ready)
-        self.data_handler.filter_data()
+        if files_ready.empty:
+            logging.debug("Sort button pressed, but files_ready is empty.")
+            CTkMessagebox(title="Error", icon="warning",
+                          message="Error: No completed files detected, no action was taken.")
+        else:
+            logging.debug(f"The following files are ready for sorting:\n{files_ready[FILE_NAME].to_string()}")
+            self.sorter.sort_files(files_ready)
+            self.data_handler.filter_data()
