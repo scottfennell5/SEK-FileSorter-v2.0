@@ -1,6 +1,6 @@
 # SEK File Sorter
 
-*A simple file sorter for organizing client PDFs quickly and efficiently.*
+*A simple file sorter for organizing client PDFs quickly and efficiently, rewritten to be more user friendly and maintainable.*
 
 ## Installation
 
