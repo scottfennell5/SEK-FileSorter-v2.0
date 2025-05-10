@@ -1,6 +1,6 @@
 # SEK File Sorter
 
-*A simple file sorter for organizing client PDFs quickly and efficiently, rewritten to be more user friendly and maintainable.*
+*This tool was initially developed in early 2024 to improve data workflows in my role as a Data Entry Specialist. The public repo was created recently to share a cleaned, refactored version of the code.*
 
 ## Installation
 
