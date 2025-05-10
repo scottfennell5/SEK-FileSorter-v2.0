@@ -1,7 +1,6 @@
 # SEK File Sorter
 
-*This tool was initially developed in early 2024 to improve data workflows in my role as a Data Entry Specialist. The public repo was created recently to share a cleaned, refactored version of the code.*
-
+*This tool was initially developed in early 2024 to improve data workflows in my role as a Data Entry Specialist. The public repo was created recently to share a cleaned, refactored version of the code. It contains no proprietary data, and it is shared here with permission from the company.*
 ## Installation
 
 Download the latest release [**here**](https://github.com/scottfennell5/SEK-FileSorter-v2.0/releases/latest)
