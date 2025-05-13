@@ -50,7 +50,8 @@ class Home(ctk.CTkFrame):
 
     def populate_table(self) -> None:
         for widget in self.scrollable.winfo_children():
-            widget.destroy()
+            #widget.destroy()
+            pass
 
         files = self.controller.get_data_copy()
         logging.debug(f"populating table with {len(files)} files")
@@ -61,7 +62,6 @@ class Home(ctk.CTkFrame):
 
         #grabs the specified columns below, and
         clients = list(zip(files[FILE_NAME],files[STATUS],files[CLIENT_NAME]))
-
         MAX_LENGTH = 30
 
         row = 0

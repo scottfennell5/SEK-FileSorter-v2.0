@@ -54,6 +54,7 @@ style_label_header = {
 
 style_label_body_header = {
     "font":("Bold", 20),
+    "text_color":"#d1cfcf",
     "corner_radius":0,
     "justify":"left",
     "anchor":"w"

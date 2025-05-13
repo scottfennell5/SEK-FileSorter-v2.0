@@ -62,3 +62,8 @@ class FileData(TypedDict):
     Client_2_Name: str
     Year: int
     File_Description: str
+
+#UI Navigation
+HOME_ID = "home"
+SETTINGS_ID = "settings"
+HELP_ID = "help"

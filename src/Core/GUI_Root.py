@@ -7,7 +7,9 @@ from GUI.Menu import Menu
 from GUI.Home import Home
 from GUI.Settings import Settings
 from GUI.Help import Help
+from Utility.constants import HOME_ID, SETTINGS_ID, HELP_ID
 from Utility.style import style_sub_frame
+
 
 class FileSorter(ctk.CTk):
     def __init__(self, controller:Controller):
@@ -27,12 +29,23 @@ class FileSorter(ctk.CTk):
         self.grid_columnconfigure(1, weight=3)
         self.grid_rowconfigure(0, weight=1)
 
-        self.menuFrame = Menu(controller, self, **style_sub_frame)
-        self.menuFrame.grid(row=0, column=0, padx=8, pady=8, sticky='nsew')
+        self.menu_frame = Menu(controller, self, **style_sub_frame)
+        self.menu_frame.grid(row=0, column=0, padx=8, pady=8, sticky='nsew')
 
-        self.mainFrame = ctk.CTkFrame(self, fg_color="transparent")
-        self.mainFrame.grid(row=0, column=1, padx=(0, 8), pady=8, sticky='nsew')
-        self.set_window("home")
+        self.main_frame = ctk.CTkFrame(self, fg_color="transparent")
+        self.main_frame.grid(row=0, column=1, padx=(0, 8), pady=8, sticky='nsew')
+
+        self.home_frame = Home(self.controller, self.main_frame, **style_sub_frame)
+        self.settings_frame = Settings(self.controller, self.main_frame, **style_sub_frame)
+        self.help_frame = Help(self.controller, self.main_frame, **style_sub_frame)
+
+        self.frames = {
+            HOME_ID:self.home_frame,
+            SETTINGS_ID:self.settings_frame,
+            HELP_ID:self.help_frame
+        }
+
+        self.set_window(HOME_ID)
 
     def report_callback_exception(self, exc, val, tb):
         """
@@ -55,19 +68,15 @@ class FileSorter(ctk.CTk):
         if window == self.current_window:
             return
 
-        for widget in self.mainFrame.winfo_children():
-            widget.destroy()
+        if self.current_window:
+            print(f"old_frame:{self.frames[self.current_window]}")
+            self.frames[self.current_window].place_forget()
 
-        match window:
-            case "home":
-                frame = Home(self.controller, self.mainFrame, **style_sub_frame)
-            case "settings":
-                frame = Settings(self.controller, self.mainFrame, **style_sub_frame)
-            case "help":
-                frame = Help(self.controller, self.mainFrame, **style_sub_frame)
-            case _:
-                exit(0)
-        logging.debug(self.mainFrame.winfo_children())
-        frame.place(relx=0, rely=0, relwidth=1, relheight=1)
+        new_frame = self.frames.get(window)
+        if not new_frame:
+            raise ValueError(f"Unknown window: {window}")
+
+        print(f"info:\nwindow:{window}\ncurrent_w:{self.current_window}\nnew_frame:{new_frame}")
+
+        new_frame.place(relx=0, rely=0, relwidth=1, relheight=1)
         self.current_window = window
-        logging.debug(self.current_window)
