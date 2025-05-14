@@ -50,8 +50,7 @@ class Home(ctk.CTkFrame):
 
     def populate_table(self) -> None:
         for widget in self.scrollable.winfo_children():
-            #widget.destroy()
-            pass
+            widget.destroy()
 
         files = self.controller.get_data_copy()
         logging.debug(f"populating table with {len(files)} files")
@@ -88,7 +87,7 @@ class Home(ctk.CTkFrame):
     def open_file(self, file_data:FileData) -> None:
         inputOverlay = FileInput(self.controller, file_data, self, **style_sub_frame)
 
-        start_y = 1.0
+        start_y = 1.2
         target_y = 0.0
         steps = 20
         delay = 10
@@ -110,7 +109,7 @@ class Home(ctk.CTkFrame):
 
     def close(self,widget:ctk.CTkBaseClass) -> None:
         start_y = 0.0
-        target_y = 1.0
+        target_y = 1.2
         steps = 20
         delay = 10
 
@@ -125,9 +124,9 @@ class Home(ctk.CTkFrame):
                 self.after(delay, animate, step + 1)
             else:
                 widget.destroy()
+                self.update()
 
         animate()
-        self.update()
 
     def update(self) -> None:
         logging.debug("Refreshing the UI with updated data.")
