@@ -69,7 +69,7 @@ class Home(ctk.CTkFrame):
         table.place(relx=0, rely=0, relwidth=1, relheight=1)
 
         end = time.time()
-        print(f"populate_table:{round(end - start, 3)}s")
+        logging.debug(f"populate_table:{round(end - start, 3)}s")
 
     def open_file(self, file_data:RowData) -> None:
         inputOverlay = FileInput(self.controller, file_data, self, **style_sub_frame)

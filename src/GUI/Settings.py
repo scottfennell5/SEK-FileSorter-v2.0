@@ -108,7 +108,7 @@ class Settings(ctk.CTkFrame):
         try:
             os.startfile(path)
         except OSError:
-            print(f"attempt to open path: {path} failed, invalid path")
+            logging.debug(f"attempt to open path: {path} failed, invalid path")
 
     def change_directory(self, pathID:str) -> None:
         path = filedialog.askdirectory(initialdir="C:\\",

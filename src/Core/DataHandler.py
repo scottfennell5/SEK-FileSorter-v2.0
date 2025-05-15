@@ -51,7 +51,6 @@ class DataHandler:
             logging.warning(f"unexpected error reading settings.yaml: {e}")
 
         logging.info("generating new settings.yaml")
-        print(self.settings_path)
         with open(self.settings_path, 'w') as file:
             yaml.dump(DEFAULT_SETTINGS, file, default_flow_style=False)
 
