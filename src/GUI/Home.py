@@ -1,10 +1,12 @@
 import customtkinter as ctk
 from functools import partial
 import logging
+import time
 
 from Core.Controller import Controller
 from GUI.FileInput import FileInput
-from Utility.constants import FILE_NAME, STATUS, CLIENT_NAME, FileData, DEFAULT_VALUES
+from GUI.Table import Table
+from Utility.constants import FILE_NAME, STATUS, CLIENT_NAME, RowData, DEFAULT_VALUES
 from Utility.style import style_button, style_label_header, style_status_complete, style_status_incomplete, \
     style_sub_frame, style_label_body, style_invisible_frame
 
@@ -13,6 +15,7 @@ class Home(ctk.CTkFrame):
     def __init__(self, controller:Controller, master:ctk.CTkBaseClass, **kwargs):
         super().__init__(master, **kwargs)
         self.controller = controller
+        self.clients = None
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=0)
         self.grid_rowconfigure(1, weight=1)
@@ -22,12 +25,9 @@ class Home(ctk.CTkFrame):
         self.header.grid_columnconfigure(0, weight=1)
         self.header.grid(row=0,column=0,padx=5,pady=5,sticky='w')
 
-        self.scrollable = ctk.CTkScrollableFrame(self, corner_radius=0,fg_color="transparent")
-        self.scrollable.grid_columnconfigure(0, weight=4)
-        self.scrollable.grid_columnconfigure(1, weight=1)
-        self.scrollable.grid_columnconfigure(2, weight=1)
-        self.populate_table()
-        self.scrollable.grid(row=1,column=0,padx=5,pady=5,sticky='nsew')
+        self.table_frame = ctk.CTkFrame(self, **style_invisible_frame)
+        self.populate_body()
+        self.table_frame.grid(row=1, column=0, padx=5, pady=5, sticky='nsew')
 
     def populate_header(self) -> None:
         col = 0
@@ -48,43 +48,30 @@ class Home(ctk.CTkFrame):
         refresh_button.pack(side=ctk.RIGHT,padx=4)
         col += 1
 
-    def populate_table(self) -> None:
-        for widget in self.scrollable.winfo_children():
+    def populate_body(self) -> None:
+        start = time.time()
+
+        for widget in self.table_frame.winfo_children():
             widget.destroy()
 
         files = self.controller.get_data_copy()
         logging.debug(f"populating table with {len(files)} files")
         if files.empty or files is None:
-            label = ctk.CTkLabel(self.scrollable, text="No files detected! \n\n\nIf you expected files here, \nmake sure the Client Directory path in 'Settings' is correct.")
-            label.grid(row=0,column=0,padx=8,pady=5,sticky='new')
+            label = ctk.CTkLabel(self.table_frame,
+                                 text="No files detected! \n\n\nIf you expected files here, \nmake sure the Client Directory path in 'Settings' is correct.")
+            label.grid(row=0, column=0, padx=8, pady=5, sticky='new')
             return
 
-        #grabs the specified columns below, and
-        clients = list(zip(files[FILE_NAME],files[STATUS],files[CLIENT_NAME]))
-        MAX_LENGTH = 30
+        # grabs the specified columns below, and
+        clients = list(zip(files[FILE_NAME], files[STATUS], files[CLIENT_NAME]))
 
-        row = 0
-        for client in clients:
-            #client = (file_name, status, client_name)
-            client_name = client[2]
-            if client_name == DEFAULT_VALUES[CLIENT_NAME]:
-                client_name = client[0]
-            if len(client_name) > MAX_LENGTH:
-                client_name = client_name[:MAX_LENGTH].rstrip() + "..."
-            client_label = ctk.CTkLabel(self.scrollable, text=client_name, **style_label_body)
-            client_label.grid(row=row+1,column=0,padx=(8,0),pady=5,sticky='w')
+        table = Table(self.table_frame, self.controller, clients, **style_invisible_frame)
+        table.place(relx=0, rely=0, relwidth=1, relheight=1)
 
-            style = style_status_complete if client[1] else style_status_incomplete
-            status_label = ctk.CTkLabel(self.scrollable, **style, corner_radius=5, width=50,justify="left", anchor="w")
-            status_label.grid(row=row+1, column=1, pady=5, sticky='w')
+        end = time.time()
+        print(f"populate_table:{round(end - start, 3)}s")
 
-            open_button = ctk.CTkButton(self.scrollable, text="Open File", **style_button, width=125,
-                                        command=partial(self.open_file, self.controller.get_row(client[0])))
-            open_button.grid(row=row+1,column=2,pady=5,sticky='w')
-
-            row += 1
-
-    def open_file(self, file_data:FileData) -> None:
+    def open_file(self, file_data:RowData) -> None:
         inputOverlay = FileInput(self.controller, file_data, self, **style_sub_frame)
 
         start_y = 1.2
@@ -123,7 +110,8 @@ class Home(ctk.CTkFrame):
             if step < steps:
                 self.after(delay, animate, step + 1)
             else:
-                widget.destroy()
+                widget.place_forget()
+                self.after(500, widget.destroy)
                 self.update()
 
         animate()
@@ -131,7 +119,7 @@ class Home(ctk.CTkFrame):
     def update(self) -> None:
         logging.debug("Refreshing the UI with updated data.")
         self.controller.update()
-        self.populate_table()
+        self.populate_body()
 
     def sort(self) -> None:
         self.controller.sort_files()

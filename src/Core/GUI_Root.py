@@ -76,7 +76,5 @@ class FileSorter(ctk.CTk):
         if not new_frame:
             raise ValueError(f"Unknown window: {window}")
 
-        print(f"info:\nwindow:{window}\ncurrent_w:{self.current_window}\nnew_frame:{new_frame}")
-
         new_frame.place(relx=0, rely=0, relwidth=1, relheight=1)
         self.current_window = window

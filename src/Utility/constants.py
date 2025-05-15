@@ -54,7 +54,7 @@ NAME_VALIDATORS = {
             BUSINESS: VALID_NAME_BUSINESS
         }
 
-class FileData(TypedDict):
+class RowData(TypedDict):
     File_Name: str
     File_Status: bool
     Client_Type: str

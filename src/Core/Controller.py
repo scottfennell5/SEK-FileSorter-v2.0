@@ -10,7 +10,7 @@ from Utility.constants import (
     FILE_NAME, STATUS, CLIENT_TYPE, CLIENT_NAME, CLIENT_2_NAME, YEAR, DESCRIPTION, #indexes
     FILES_ID, TARGET_ID,
     NAME_VALIDATORS, VALID_YEAR, DEFAULT_VALUES,
-    FileData #type hinting
+    RowData #type hinting
 )
 
 class Controller:
@@ -42,7 +42,7 @@ class Controller:
     def get_data_copy(self) -> pd.DataFrame:
         return self.data_handler.get_data_copy()
 
-    def get_row(self, file_name:str) -> FileData:
+    def get_row(self, file_name:str) -> RowData:
         return self.data_handler.get_row(file_name)
 
     def open_file(self, file_name:str) -> str:
