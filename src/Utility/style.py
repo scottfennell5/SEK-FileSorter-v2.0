@@ -61,9 +61,9 @@ style_label_body_header = {
 }
 
 style_label_body = {
-    "corner_radius":0,
-    "width":75,
     "text_color":"#d1cfcf",
+    "font":("Arial", 14),
+    "corner_radius":0,
     "justify":"left",
     "anchor":"w"
 }

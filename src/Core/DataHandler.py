@@ -10,7 +10,7 @@ import logging
 from Utility.constants import (
     FILE_NAME, STATUS, CLIENT_TYPE, CLIENT_NAME, CLIENT_2_NAME, YEAR, DESCRIPTION,
     FILES_ID, TARGET_ID,
-    DEFAULT_VALUES, DEFAULT_SETTINGS, DEFAULT_DATAFRAME, FileData)
+    DEFAULT_VALUES, DEFAULT_SETTINGS, DEFAULT_DATAFRAME, RowData)
 
 class DataHandler:
     def __init__(self):
@@ -97,10 +97,10 @@ class DataHandler:
         def get_valid_path(key: str) -> str:
             path = settings.get(key)
             if not path:
-                logging.info(f"{key} is empty, setting to ''")
+                logging.info(f"value for {key} is empty, setting to ''")
                 return ""
             if not os.path.exists(path):
-                logging.info(f"{key} path does not exist, setting to ''")
+                logging.info(f"value for {key} path does not exist, setting to ''")
                 return ""
             return path
 
@@ -145,7 +145,7 @@ class DataHandler:
         Return False and log warnings if there are unexpected or missing columns,
         or if file names are not unique.
         """
-        expected_columns = set(FileData.__annotations__.keys())
+        expected_columns = set(RowData.__annotations__.keys())
         actual_columns = set(self.files_df)
 
         unexpected = actual_columns - expected_columns
@@ -218,27 +218,27 @@ class DataHandler:
                 })
                 self.files_df = pd.concat([self.files_df, new_row], ignore_index=True)
 
-    def update_row(self, file_data: FileData) -> None:
+    def update_row(self, row_data: RowData) -> None:
         """
         Given a row of data for a specific file, file_data, replaces the currently stored information with the
         information given in file_data
         """
-        logging.debug(f"updating row {file_data[FILE_NAME]}...")
+        logging.debug(f"updating row {row_data[FILE_NAME]}...")
 
-        matching = self.files_df.loc[self.files_df[FILE_NAME] == file_data[FILE_NAME]]
+        matching = self.files_df.loc[self.files_df[FILE_NAME] == row_data[FILE_NAME]]
         if matching.empty:
-            logging.warning(f"no matching row to update: {file_data[FILE_NAME]}")
+            logging.warning(f"no matching row to update: {row_data[FILE_NAME]}")
             return
         row_index = matching.index[0]
 
-        self.files_df.at[row_index, STATUS] = file_data[STATUS]
-        self.files_df.at[row_index, CLIENT_TYPE] = file_data[CLIENT_TYPE]
-        self.files_df.at[row_index, CLIENT_NAME] = file_data[CLIENT_NAME]
-        self.files_df.at[row_index, CLIENT_2_NAME] = file_data[CLIENT_2_NAME]
-        self.files_df.at[row_index, YEAR] = int(file_data[YEAR])
-        self.files_df.at[row_index, DESCRIPTION] = file_data[DESCRIPTION]
+        self.files_df.at[row_index, STATUS] = row_data[STATUS]
+        self.files_df.at[row_index, CLIENT_TYPE] = row_data[CLIENT_TYPE]
+        self.files_df.at[row_index, CLIENT_NAME] = row_data[CLIENT_NAME]
+        self.files_df.at[row_index, CLIENT_2_NAME] = row_data[CLIENT_2_NAME]
+        self.files_df.at[row_index, YEAR] = int(row_data[YEAR])
+        self.files_df.at[row_index, DESCRIPTION] = row_data[DESCRIPTION]
 
-        logging.debug(f"New dataframe: {self.files_df.to_string()}")
+        logging.debug(f"New row values: {self.files_df.loc[row_index]}")
         self.save_data_instance()
 
     def update(self) -> None:
@@ -246,6 +246,7 @@ class DataHandler:
         self.load_data_instance()
         self.filter_data()
         self.scan_files()
+        logging.debug(f"dataframe updated, new values:\n{self.files_df.to_string()}")
 
     def open_file(self,file_name) -> str:
         """
@@ -271,7 +272,6 @@ class DataHandler:
             return error
 
     def get_data_copy(self) -> pd.DataFrame:
-        logging.debug(f"returning copy of df:\n{self.files_df}")
         return self.files_df.copy()
 
     def get_base_directory(self) -> str:
@@ -308,7 +308,6 @@ class DataHandler:
         self.file_path = path
 
     def get_file_path(self) -> str:
-        logging.debug(f"returned file_path: {self.file_path}")
         return self.file_path
 
     def set_target_path(self, path: str) -> None:
@@ -316,7 +315,6 @@ class DataHandler:
         self.target_path = path
 
     def get_target_path(self) -> str:
-        logging.debug(f"returned target_path: {self.target_path}")
         return self.target_path
 
     def get_row(self, file_name: str) -> dict | None:
@@ -325,7 +323,6 @@ class DataHandler:
         Also, cast all column data types to their equivalent Python data types, to avoid NumPy issues
         """
         row = self.files_df.loc[self.files_df[FILE_NAME] == file_name]
-        logging.debug(f"returning row for file: {file_name}")
         if not row.empty:
             return row.iloc[0].apply(lambda x: x.item() if hasattr(x, 'item') else x).to_dict()
         return None

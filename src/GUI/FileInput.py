@@ -8,7 +8,7 @@ from Core.Controller import Controller
 from Utility.constants import (
     FILE_NAME, STATUS, CLIENT_TYPE, CLIENT_NAME, CLIENT_2_NAME, YEAR, DESCRIPTION,
     CLIENT, BUSINESS,
-    FileData)
+    RowData)
 
 class FileInput(ctk.CTkFrame):
     MAX_LENGTH = 15
@@ -25,7 +25,7 @@ class FileInput(ctk.CTkFrame):
         }
     }
 
-    def __init__(self, controller:Controller, file_data:FileData, master:ctk.CTkBaseClass, **kwargs):
+    def __init__(self, controller:Controller, file_data:RowData, master:ctk.CTkBaseClass, **kwargs):
         super().__init__(master, **kwargs)
         logging.debug(f"Creating FileInput object with data: {file_data}")
         self.controller = controller
