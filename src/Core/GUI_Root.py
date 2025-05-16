@@ -29,13 +29,13 @@ class FileSorter(ctk.CTk):
         self.grid_columnconfigure(1, weight=3)
         self.grid_rowconfigure(0, weight=1)
 
-        self.menu_frame = Menu(controller, self, **style_sub_frame)
+        self.menu_frame = Menu(self, controller, **style_sub_frame)
         self.menu_frame.grid(row=0, column=0, padx=8, pady=8, sticky='nsew')
 
         self.main_frame = ctk.CTkFrame(self, fg_color="transparent")
         self.main_frame.grid(row=0, column=1, padx=(0, 8), pady=8, sticky='nsew')
 
-        self.home_frame = Home(self.controller, self.main_frame, **style_sub_frame)
+        self.home_frame = Home(self.main_frame, self.controller, **style_sub_frame)
         self.settings_frame = Settings(self.controller, self.main_frame, **style_sub_frame)
         self.help_frame = Help(self.controller, self.main_frame, **style_sub_frame)
 

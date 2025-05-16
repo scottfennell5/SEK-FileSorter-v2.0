@@ -12,7 +12,7 @@ from Utility.style import style_button, style_label_header, style_status_complet
 
 
 class Home(ctk.CTkFrame):
-    def __init__(self, controller:Controller, master:ctk.CTkBaseClass, **kwargs):
+    def __init__(self, master:ctk.CTkBaseClass, controller:Controller, **kwargs):
         super().__init__(master, **kwargs)
         self.controller = controller
         self.clients = None

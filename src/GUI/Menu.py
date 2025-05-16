@@ -6,7 +6,7 @@ from Utility.style import style_main_menu_button
 
 
 class Menu(ctk.CTkFrame):
-    def __init__(self, controller:Controller, master:CTkBaseClass, **kwargs):
+    def __init__(self, master:CTkBaseClass, controller:Controller, **kwargs):
         super().__init__(master, **kwargs)
         self.controller = controller
         self.grid_columnconfigure(0, weight=1)
