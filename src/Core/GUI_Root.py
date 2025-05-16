@@ -69,7 +69,6 @@ class FileSorter(ctk.CTk):
             return
 
         if self.current_window:
-            print(f"old_frame:{self.frames[self.current_window]}")
             self.frames[self.current_window].place_forget()
 
         new_frame = self.frames.get(window)
