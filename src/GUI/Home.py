@@ -25,9 +25,10 @@ class Home(ctk.CTkFrame):
         self.header.grid_columnconfigure(0, weight=1)
         self.header.grid(row=0,column=0,padx=5,pady=5,sticky='w')
 
-        self.table_frame = ctk.CTkFrame(self, **style_invisible_frame)
+        self.body = ctk.CTkFrame(self, **style_invisible_frame)
+        self.body.columnconfigure(0,weight=1)
         self.populate_body()
-        self.table_frame.grid(row=1, column=0, padx=5, pady=5, sticky='nsew')
+        self.body.grid(row=1, column=0, padx=5, pady=5, sticky='nsew')
 
     def populate_header(self) -> None:
         col = 0
@@ -51,21 +52,22 @@ class Home(ctk.CTkFrame):
     def populate_body(self) -> None:
         start = time.time()
 
-        for widget in self.table_frame.winfo_children():
+        for widget in self.body.winfo_children():
             widget.destroy()
 
         files = self.controller.get_data_copy()
         logging.debug(f"populating table with {len(files)} files")
         if files.empty or files is None:
-            label = ctk.CTkLabel(self.table_frame,
-                                 text="No files detected! \n\n\nIf you expected files here, \nmake sure the Client Directory path in 'Settings' is correct.")
+            label = ctk.CTkLabel(self.body,
+                                 text="No files detected! \n\n\nIf you expected files here, \nmake sure the Client Directory path in 'Settings' is correct.",
+                                 justify="center",anchor="center")
             label.grid(row=0, column=0, padx=8, pady=5, sticky='new')
             return
 
         # grabs the specified columns below, and
         clients = list(zip(files[FILE_NAME], files[STATUS], files[CLIENT_NAME]))
 
-        table = Table(self.table_frame, self.controller, clients, **style_invisible_frame)
+        table = Table(self.body, self.controller, clients, **style_invisible_frame)
         table.place(relx=0, rely=0, relwidth=1, relheight=1)
 
         end = time.time()
