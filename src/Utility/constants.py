@@ -3,6 +3,7 @@ import pandas as pd
 
 #files dataframe
 FILE_NAME = 'File_Name'
+FILE_PATH = 'File_Path'
 STATUS = 'File_Status'
 CLIENT_TYPE = 'Client_Type'
 CLIENT_NAME = 'Client_Name'
@@ -12,6 +13,7 @@ DESCRIPTION = 'File_Description'
 
 DEFAULT_DATAFRAME = pd.DataFrame({
     FILE_NAME:pd.Series(dtype=str),
+    FILE_PATH:pd.Series(dtype=str),
     STATUS:pd.Series(dtype=bool),
     CLIENT_TYPE:pd.Series(dtype=str),
     CLIENT_NAME:pd.Series(dtype=str),
@@ -22,6 +24,7 @@ DEFAULT_DATAFRAME = pd.DataFrame({
 
 DEFAULT_VALUES = {
     FILE_NAME: "",
+    FILE_PATH: "",
     STATUS: False,
     CLIENT_TYPE: 'unknown',
     CLIENT_NAME: 'unknown client',
@@ -40,7 +43,7 @@ FILES_ID = "files"
 TARGET_ID = "target"
 
 DEFAULT_SETTINGS = {
-    FILES_ID: "",
+    FILES_ID: [],
     TARGET_ID: ""
 }
 
@@ -56,6 +59,7 @@ NAME_VALIDATORS = {
 
 class RowData(TypedDict):
     File_Name: str
+    File_Path: str
     File_Status: bool
     Client_Type: str
     Client_Name: str

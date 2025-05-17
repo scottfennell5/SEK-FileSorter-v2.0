@@ -2,13 +2,15 @@ import sys
 import time
 from typing import Any
 import webbrowser as wb
+
+import pandas
 import pandas as pd
 import yaml
 import os
 import logging
 
 from Utility.constants import (
-    FILE_NAME, STATUS, CLIENT_TYPE, CLIENT_NAME, CLIENT_2_NAME, YEAR, DESCRIPTION,
+    FILE_NAME, FILE_PATH, STATUS, CLIENT_TYPE, CLIENT_NAME, CLIENT_2_NAME, YEAR, DESCRIPTION,
     FILES_ID, TARGET_ID,
     DEFAULT_VALUES, DEFAULT_SETTINGS, DEFAULT_DATAFRAME, RowData)
 
@@ -19,7 +21,7 @@ class DataHandler:
         self.init_directories()
         self.olddata_path = self.resource_path(r"PersistentData/Data/olddata.yaml")
         self.settings_path = self.resource_path(r"PersistentData/Data/settings.yaml")
-        self.file_path = ""
+        self.file_paths = []
         self.target_path = ""
         self.load_settings()
         self.update()
@@ -81,7 +83,7 @@ class DataHandler:
         note: will override previously stored settings
         """
         settings = {
-            FILES_ID:self.file_path,
+            FILES_ID:self.file_paths,
             TARGET_ID:self.target_path
         }
 
@@ -93,18 +95,28 @@ class DataHandler:
                       sort_keys=False)
 
     def apply_settings(self, settings:dict) -> None:
-        def get_valid_path(key: str) -> str:
-            path = settings.get(key)
+        def get_valid_path(path: str) -> str | None:
             if not path:
-                logging.info(f"value for {key} is empty, setting to ''")
-                return ""
+                logging.info(f"Path is empty, setting to ''")
+                return None
             if not os.path.exists(path):
-                logging.info(f"value for {key} path does not exist, setting to ''")
-                return ""
+                logging.info(f"Path {path} does not exist, setting to ''")
+                return None
             return path
 
-        self.file_path = get_valid_path(FILES_ID)
-        self.target_path = get_valid_path(TARGET_ID)
+        raw_paths = settings.get(FILES_ID, [])
+        if not isinstance(raw_paths, list):
+            logging.warning(f"Expected a list of paths for {FILES_ID}, got {type(raw_paths).__name__}")
+            raw_paths = []
+
+        self.file_paths = [
+            validated for path in raw_paths
+            if (validated := get_valid_path(path)) is not None
+        ]
+
+        print(self.file_paths)
+
+        self.target_path = get_valid_path(settings.get(TARGET_ID, ""))
 
     def load_data_instance(self) -> None:
         """
@@ -157,8 +169,8 @@ class DataHandler:
             logging.warning(f"missing columns in dataframe: {missing}")
             return False
 
-        if not self.files_df[FILE_NAME].is_unique:
-            logging.warning(f"duplicate file names found! file names: {self.files_df[FILE_NAME]}")
+        if self.files_df.duplicated(subset=[FILE_NAME, FILE_PATH]).any():
+            logging.warning(f"duplicate file name/path combinations found!")
             return False
 
         logging.debug("dataframe passed validation")
@@ -173,49 +185,58 @@ class DataHandler:
 
     def filter_data(self) -> None:
         """
-        Removes rows correlating to file names that no longer exist from self.files_df
+        Removes rows correlating to file names that no longer exist from files_df
+        additionally, any paths that no longer exist are removed from file_paths
         """
-        logging.debug(f"Checking if path exists: {self.file_path} -> {os.path.exists(self.file_path)}")
-        if self.file_path == "" or not os.path.exists(self.file_path):
-            logging.warning("dataHandler.filter_data: called with invalid file path")
-            self.files_df = DEFAULT_DATAFRAME
-            return
+        verified_df = DEFAULT_DATAFRAME
+        existing_paths = []
+        for path in self.file_paths:
+            logging.debug(f"Checking if path exists: {path} -> {os.path.exists(path)}")
+            if os.path.exists(path):
+                existing_paths.append(path)
+            else:
+                logging.warning(f"Path {path} invalid, removing from list")
+                continue
 
-        actual_files = list(os.listdir(self.file_path))
-        if actual_files and not self.files_df.empty:
-            self.files_df = self.files_df.loc[self.files_df[FILE_NAME].isin(actual_files)]
-        else:
-            self.files_df = DEFAULT_DATAFRAME
+            actual_files = list(os.listdir(path))
+            if actual_files and not self.files_df.empty:
+                path_matches = self.files_df[FILE_PATH] == path
+                file_exists = self.files_df[FILE_NAME].isin(actual_files)
+                valid_rows = self.files_df.loc[path_matches & file_exists]
+                verified_df = pd.concat([verified_df, valid_rows], ignore_index=True)
+
+        self.files_df = verified_df
+        self.file_paths = existing_paths
 
     def scan_files(self) -> None:
         """
         Scans file_path for any file names that are not already in the existing dataframe
         if found, populates a new row for each file with default values
         """
-        logging.debug(f"Checking if path exists: {self.file_path} -> {os.path.exists(self.file_path)}")
-        if self.file_path == "" or not os.path.exists(self.file_path):
-            logging.warning("dataHandler.scan_files: called with invalid file path")
-            return
+        new_rows = []
+        for path in self.file_paths:
+            actual_files = os.listdir(path)
+            df_file_path_pairs = set(zip(self.files_df['File_Name'], self.files_df['File_Path']))
+            for file in actual_files:
+                duplicate_file = (file, path) in df_file_path_pairs
+                is_pdf = file.endswith(".pdf")
+                if not duplicate_file and is_pdf:
+                    logging.debug(f"new file found {file}, adding with filler data...")
+                    new_row = {
+                        FILE_NAME:file,
+                        FILE_PATH:path,
+                        STATUS:DEFAULT_VALUES[STATUS],
+                        CLIENT_TYPE:DEFAULT_VALUES[CLIENT_TYPE],
+                        CLIENT_NAME: DEFAULT_VALUES[CLIENT_NAME],
+                        CLIENT_2_NAME: DEFAULT_VALUES[CLIENT_2_NAME],
+                        YEAR: DEFAULT_VALUES[YEAR],
+                        DESCRIPTION: DEFAULT_VALUES[DESCRIPTION],
+                    }
+                    new_rows.append(new_row)
 
-        actual_files = os.listdir(self.file_path)
-        files_in_df = set(self.files_df['File_Name'])
-        for file in actual_files:
-            duplicate_file = file in files_in_df
-            not_pdf = not file.endswith(".pdf")
-            if duplicate_file or not_pdf:
-                pass
-            else:
-                logging.debug(f"new file found {file}, adding with filler data...")
-                new_row = pd.DataFrame({
-                    'File_Name': [file],
-                    'File_Status': DEFAULT_VALUES[STATUS],
-                    'Client_Type': DEFAULT_VALUES[CLIENT_TYPE],
-                    'Client_Name': DEFAULT_VALUES[CLIENT_NAME],
-                    'Client_2_Name': DEFAULT_VALUES[CLIENT_2_NAME],
-                    'Year': DEFAULT_VALUES[YEAR],
-                    'File_Description': DEFAULT_VALUES[DESCRIPTION]
-                })
-                self.files_df = pd.concat([self.files_df, new_row], ignore_index=True)
+        if new_rows:
+            new_rows_df = pd.DataFrame(new_rows)
+            self.files_df = pd.concat([self.files_df,new_rows_df], ignore_index=True)
 
     def update_row(self, row_data: RowData) -> None:
         """
@@ -224,10 +245,15 @@ class DataHandler:
         """
         logging.debug(f"updating row {row_data[FILE_NAME]}...")
 
-        matching = self.files_df.loc[self.files_df[FILE_NAME] == row_data[FILE_NAME]]
+        name_match = self.files_df[FILE_NAME] == row_data[FILE_NAME]
+        path_match = self.files_df[FILE_PATH] == row_data[FILE_PATH]
+        matching = self.files_df.loc[name_match & path_match]
         if matching.empty:
             logging.warning(f"no matching row to update: {row_data[FILE_NAME]}")
             return
+        if len(matching) > 1:
+            logging.warning(
+                f"Multiple rows matched (should be impossible): {row_data[FILE_NAME]} at path {row_data[FILE_PATH]}")
         row_index = matching.index[0]
 
         self.files_df.at[row_index, STATUS] = row_data[STATUS]
@@ -247,16 +273,12 @@ class DataHandler:
         self.scan_files()
         logging.debug(f"dataframe updated, new values:\n{self.files_df.to_string()}")
 
-    def open_file(self,file_name) -> str:
+    def open_file(self, file_name:str, file_path:str) -> str:
         """
         Given a file name, attempts to open that file using the default browser specified in the user's windows settings
         If there are no errors, returns an empty string, otherwise logs and returns the specific error as a string
         """
-        if self.file_path == "":
-            error = "File path undefined.\nPlease specify a file path in settings."
-            logging.warning(error)
-            return error
-        full_path = os.path.join(self.file_path, file_name)
+        full_path = os.path.join(file_path, file_name)
         if os.path.exists(full_path):
             new = 2 #open in new tab
             try:
@@ -302,12 +324,12 @@ class DataHandler:
             logging.debug(f"returning base path: '{base_path}' merged with relative path: '{relative_path}' as a full path: '{path}'")
         return path
 
-    def set_file_path(self, path: str) -> None:
-        logging.debug(f"set file_path to {path}")
-        self.file_path = path
+    def set_file_paths(self, paths: list[str]) -> None:
+        logging.debug(f"set file_paths to {paths}")
+        self.file_paths = paths
 
-    def get_file_path(self) -> str:
-        return self.file_path
+    def get_file_paths(self) -> list[str]:
+        return self.file_paths
 
     def set_target_path(self, path: str) -> None:
         logging.debug(f"set target_path to {path}")
@@ -316,12 +338,15 @@ class DataHandler:
     def get_target_path(self) -> str:
         return self.target_path
 
-    def get_row(self, file_name: str) -> dict | None:
+    def get_row(self, file_name: str, file_path: str) -> dict | None:
         """
-        Given a file name, return the row of data that file name correlates to
+        Given a file name & path, return the row of data that file name correlates to
         Also, cast all column data types to their equivalent Python data types, to avoid NumPy issues
         """
-        row = self.files_df.loc[self.files_df[FILE_NAME] == file_name]
+
+        name_match = self.files_df[FILE_NAME] == file_name
+        path_match = self.files_df[FILE_PATH] == file_path
+        row = self.files_df.loc[name_match & path_match]
         if not row.empty:
             return row.iloc[0].apply(lambda x: x.item() if hasattr(x, 'item') else x).to_dict()
         return None
