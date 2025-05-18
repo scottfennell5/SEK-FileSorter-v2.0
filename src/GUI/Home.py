@@ -59,7 +59,7 @@ class Home(ctk.CTkFrame):
         logging.debug(f"populating table with {len(files)} files")
         if files.empty or files is None:
             label = ctk.CTkLabel(self.body,
-                                 text="No files detected! \n\n\nIf you expected files here, \nmake sure the Client Directory path in 'Settings' is correct.",
+                                 text="No files detected! \n\n\nIf you expected files here, \nmake sure the Scanned Files path in 'Settings' is correct.",
                                  justify="center",anchor="center")
             label.grid(row=0, column=0, padx=8, pady=5, sticky='new')
             return
