@@ -26,7 +26,6 @@ class Settings(ctk.CTkFrame):
         self.pending_changes = False
         self.grid_columnconfigure(0,weight=1)
 
-
         self.header = ctk.CTkFrame(self,**style_invisible_frame)
         self.header.grid(row=0,column=0,padx=5,pady=5,sticky='nw')
         self.populate_header()
