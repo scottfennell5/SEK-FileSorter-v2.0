@@ -1,6 +1,6 @@
 # SEK File Sorter
 
-*This tool was initially developed in early 2024 to improve data workflows in my role as a Data Entry Specialist. This public repo was created recently to share a cleaned, refactored version of the code. It contains no proprietary data, and it is shared here with permission from the company.*
+*This tool was initially developed in 2024 to improve data workflows in my role as a Data Entry Specialist. This public repo was created recently to share a cleaned, refactored version of the code as part of supporting additional businessness requirements. It contains no proprietary data, and it is shared here with permission from the company.*
 
 ## Installation
 
