@@ -18,7 +18,7 @@ Download the latest release [**here**](https://github.com/scottfennell5/SEK-File
    Ensure the scanned and target directories are set correctly.  
    ![Settings Initialization](readme/images/init_settings.png)  
    Once configured, the page should look something like this, with a file path at each section:  
-   ![Settings Complete](readme/images/settings_complete_1.png)
+   ![Settings Complete](readme/images/settings_complete.png)
 
 2. **Navigate to the 'Home' Menu**  
    This displays the list of files pulled from the scanned directory.
