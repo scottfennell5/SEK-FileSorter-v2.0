@@ -20,25 +20,25 @@ Download the latest release [**here**](https://github.com/scottfennell5/SEK-File
    Once configured, the page should look something like this, with a file path at each section:  
    ![Settings Complete](readme/images/settings_complete_1.png)
 
-3. **Navigate to the 'Home' Menu**  
+2. **Navigate to the 'Home' Menu**  
    This displays the list of files pulled from the scanned directory.  
-   ![Initial Home Screen](readme/images/populated_home.png)
 
-4. **Check File Status**  
+3. **Check File Status**  
    Each file will show a status: `Incomplete` or `Complete`.  
    - **Incomplete** means more data needs to be entered.  
-   - **Complete** means the file is ready to be sorted.  
+   - **Complete** means the file is ready to be sorted.
+   ![Initial Home Screen](readme/images/populated_home.png)  
    Click on a file to begin editing:  
    ![Initial File Input](readme/images/init_file_input.png)  
    After submitting the necessary data by clicking 'Save':  
    ![File Input Submitted](readme/images/file_input_submitted.png)  
    you can safely return to the home page.
 
-5. **Return to 'Home' Menu**  
+4. **Return to 'Home' Menu**  
    You’ll now see the files you modified marked as either `Complete` or `Incomplete`. If any modified file is `Incomplete`, check that the filled in data matches the formatting requirements.  
    ![Populated Home](readme/images/file_complete.png)
 
-6. **Press the 'Sort' Button**  
+5. **Press the 'Sort' Button**  
    This will move all files marked `Complete` to the target directory in their associated folder.  
    - If a client directory does not exist, it will be created automatically.  
    ![Sorting Complete](readme/images/sorting_complete.png)
