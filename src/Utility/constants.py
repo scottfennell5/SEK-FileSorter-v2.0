@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import TypedDict
 import pandas as pd
 
@@ -71,3 +72,6 @@ class RowData(TypedDict):
 HOME_ID = "home"
 SETTINGS_ID = "settings"
 HELP_ID = "help"
+
+STATUS_DO_NOTHING = "empty"
+STATUS_SUCCESS = "success"

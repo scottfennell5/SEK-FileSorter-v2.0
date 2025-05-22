@@ -33,7 +33,7 @@ def sample_data_business():
 
 def test_set_get_paths():
     sorter = Sorter("/input", "/output")
-    sorter.set_file_path("/new_input")
+    sorter.set_file_paths("/new_input")
     sorter.set_target_path("/new_output")
     assert sorter.get_file_path() == "/new_input"
     assert sorter.get_target_path() == "/new_output"

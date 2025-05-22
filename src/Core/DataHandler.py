@@ -19,8 +19,8 @@ class DataHandler:
         logging.debug("Init Datahandler")
         self.files_df = DEFAULT_DATAFRAME
         self.init_directories()
-        self.olddata_path = self.resource_path(r"PersistentData/Data/olddata.yaml")
-        self.settings_path = self.resource_path(r"PersistentData/Data/settings.yaml")
+        self.olddata_path = self.resource_path("PersistentData\\Data\\olddata.yaml")
+        self.settings_path = self.resource_path("PersistentData\\Data\\settings.yaml")
         self.file_paths = []
         self.target_path = ""
         self.load_settings()
@@ -31,7 +31,7 @@ class DataHandler:
         Initialize any critical directories before app is run
         """
         full_data_path = os.path.join(self.get_base_directory(),
-                                      "PersistentData/Data/")
+                                      "PersistentData\\Data\\")
         os.makedirs(full_data_path, exist_ok=True)
 
     def load_settings(self) -> None:
@@ -122,7 +122,7 @@ class DataHandler:
         """
         Attempts to read olddata.yaml into a dataframe
         In the event that something goes wrong (file is missing, empty, corrupted, etc.)
-        a blank olddata.yaml file is created in PersistentData/Data.
+        a blank olddata.yaml file is created in PersistentData\Data.
         """
         try:
             with open(self.olddata_path, 'r') as file:
@@ -169,8 +169,8 @@ class DataHandler:
             logging.warning(f"missing columns in dataframe: {missing}")
             return False
 
-        if self.files_df.duplicated(subset=[FILE_NAME, FILE_PATH]).any():
-            logging.warning(f"duplicate file name/path combinations found!")
+        if self.files_df.duplicated(FILE_PATH).any():
+            logging.warning(f"duplicate file path found!")
             return False
 
         logging.debug("dataframe passed validation")
@@ -198,11 +198,18 @@ class DataHandler:
                 logging.warning(f"Path {path} invalid, removing from list")
                 continue
 
-            actual_files = list(os.listdir(path))
-            if actual_files and not self.files_df.empty:
-                path_matches = self.files_df[FILE_PATH] == path
-                file_exists = self.files_df[FILE_NAME].isin(actual_files)
-                valid_rows = self.files_df.loc[path_matches & file_exists]
+            try:
+                actual_files = [
+                    os.path.join(path, file)
+                    for file in os.listdir(path)
+                ]
+            except Exception as e:
+                logging.warning(f"Could not list files in {path}: {e}")
+                continue
+
+            if not self.files_df.empty:
+                file_exists = self.files_df[FILE_PATH].isin(actual_files)
+                valid_rows = self.files_df.loc[file_exists]
                 verified_df = pd.concat([verified_df, valid_rows], ignore_index=True)
 
         self.files_df = verified_df
@@ -216,15 +223,16 @@ class DataHandler:
         new_rows = []
         for path in self.file_paths:
             actual_files = os.listdir(path)
-            df_file_path_pairs = set(zip(self.files_df['File_Name'], self.files_df['File_Path']))
+            df_file_path_pairs = set(self.files_df[FILE_PATH])
             for file in actual_files:
-                duplicate_file = (file, path) in df_file_path_pairs
+                full_path = os.path.join(path,file)
+                duplicate_file = full_path in df_file_path_pairs
                 is_pdf = file.endswith(".pdf")
                 if not duplicate_file and is_pdf:
                     logging.debug(f"new file found {file}, adding with filler data...")
                     new_row = {
                         FILE_NAME:file,
-                        FILE_PATH:path,
+                        FILE_PATH:full_path, #Unique ID
                         STATUS:DEFAULT_VALUES[STATUS],
                         CLIENT_TYPE:DEFAULT_VALUES[CLIENT_TYPE],
                         CLIENT_NAME: DEFAULT_VALUES[CLIENT_NAME],
@@ -242,12 +250,12 @@ class DataHandler:
         """
         Given a row of data for a specific file, file_data, replaces the currently stored information with the
         information given in file_data
+        Then saves the current instance of files_df to olddata.yaml
         """
         logging.debug(f"updating row {row_data[FILE_NAME]}...")
 
-        name_match = self.files_df[FILE_NAME] == row_data[FILE_NAME]
         path_match = self.files_df[FILE_PATH] == row_data[FILE_PATH]
-        matching = self.files_df.loc[name_match & path_match]
+        matching = self.files_df.loc[path_match]
         if matching.empty:
             logging.warning(f"no matching row to update: {row_data[FILE_NAME]}")
             return
@@ -273,12 +281,13 @@ class DataHandler:
         self.scan_files()
         logging.debug(f"dataframe updated, new values:\n{self.files_df.to_string()}")
 
-    def open_file(self, file_name:str, file_path:str) -> str:
+    def open_file(self, file_path:str) -> str:
         """
         Given a file name, attempts to open that file using the default browser specified in the user's windows settings
         If there are no errors, returns an empty string, otherwise logs and returns the specific error as a string
         """
-        full_path = os.path.join(file_path, file_name)
+        full_path = file_path
+        file_name = file_path.split("\\")
         if os.path.exists(full_path):
             new = 2 #open in new tab
             try:
@@ -288,7 +297,7 @@ class DataHandler:
                 logging.warning(f"failed to open with browser: {e}")
                 return "Failed to open with default browser,\nPlease check your computer's default browser settings."
         else:
-            error = f"File {file_name} not found!"
+            error = f"File {full_path} not found!"
             logging.info(error)
             return error
 
@@ -303,7 +312,7 @@ class DataHandler:
         """
         given a relative path (relative to the base directory of the project or exe),
         return the full path
-        (e.g. C:/Files/Somewhere/SEK-FileSorter/TargetThing given relative_path = SEK-FileSorter/TargetThing)
+        (e.g. C:\Files\Somewher\SEK-FileSorter\TargetThing given relative_path = SEK-FileSorter\TargetThing)
         """
         if hasattr(sys, '_MEIPASS'):
             # Running in PyInstaller bundle
@@ -315,8 +324,8 @@ class DataHandler:
             path = os.path.abspath(os.path.join(base_path, "..", relative_path))
 
         #for consistent formatting
-        base_path = base_path.replace("\\","/")
-        path = path.replace("\\","/")
+        base_path = base_path.replace("/","\\")
+        path = path.replace("/","\\")
 
         if relative_path == "":
             logging.debug(f"returning base path: '{base_path}'")
@@ -338,15 +347,14 @@ class DataHandler:
     def get_target_path(self) -> str:
         return self.target_path
 
-    def get_row(self, file_name: str, file_path: str) -> dict | None:
+    def get_row(self, file_path: str) -> dict | None:
         """
         Given a file name & path, return the row of data that file name correlates to
         Also, cast all column data types to their equivalent Python data types, to avoid NumPy issues
         """
 
-        name_match = self.files_df[FILE_NAME] == file_name
         path_match = self.files_df[FILE_PATH] == file_path
-        row = self.files_df.loc[name_match & path_match]
+        row = self.files_df.loc[path_match]
         if not row.empty:
             return row.iloc[0].apply(lambda x: x.item() if hasattr(x, 'item') else x).to_dict()
         return None

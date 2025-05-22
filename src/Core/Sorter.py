@@ -1,25 +1,15 @@
 import logging
 import os
 import pandas as pd
-from CTkMessagebox import CTkMessagebox
 
 from Utility.constants import (
     FILE_NAME, CLIENT_TYPE, CLIENT_NAME, CLIENT_2_NAME, YEAR, DESCRIPTION,
-    CLIENT, BUSINESS, INCOME_TAX)
+    CLIENT, BUSINESS, INCOME_TAX, STATUS_DO_NOTHING, STATUS_SUCCESS, FILE_PATH)
 
 
 class Sorter:
-    def __init__(self, file_path:str, target_path:str):
-        self.file_path = file_path
+    def __init__(self, target_path:str):
         self.target_path = target_path
-
-    def set_file_path(self, path:str) -> None:
-        logging.debug(f"set file_path to {path}")
-        self.file_path = path
-
-    def get_file_path(self) -> str:
-        logging.debug(f"returned file_path: {self.file_path}")
-        return self.file_path
 
     def set_target_path(self, path:str) -> None:
         logging.debug(f"set target_path to {path}")
@@ -29,43 +19,36 @@ class Sorter:
         logging.debug(f"returned target_path: {self.target_path}")
         return self.target_path
 
-    def update(self) -> None:
-        logging.debug("sorter updated")
-
-    def sort_files(self, files_to_sort:pd.DataFrame) -> None:
+    def sort_files(self, files_to_sort:pd.DataFrame) -> str:
         """
         Accepts a pandas dataframe containing all files where STATUS is True, sorts them into directories based on provided info
         Creates a new directory & income tax folder if one is not found
         """
         sorted_files = []
-        if not os.path.exists(self.file_path):
-            logging.info("sort called without valid file path")
-            return
         if not os.path.exists(self.target_path):
             logging.info("sort called without valid target path")
-            CTkMessagebox(title="Error", icon="warning",
-                          message="Error: Sorter needs a valid target path. \nPlease select a path in Settings.")
-            return
+            return "Error: Sorter needs a valid target path. \nPlease select a path in Settings."
 
-        files_to_sort.set_index(FILE_NAME, inplace=True)
+        files_to_sort.set_index(FILE_PATH, drop=False)
         files = list(files_to_sort.index)
 
-        for file_name in files:
-            row = files_to_sort.loc[file_name]
+        for file_path in files:
+            row = files_to_sort.loc[file_path]
+            file_name = row[FILE_NAME]
+            client_type = row[CLIENT_TYPE]
 
-            file_location = os.path.join(self.file_path,file_name).replace("\\","/")
-            if not os.path.exists(file_location):
-                logging.warning(f"file {file_name} not found at expected location: {file_location}")
+            if not os.path.exists(file_path):
+                logging.warning(f"file {file_name} not found at expected location: {file_path}")
                 continue
 
             directory_creator = {
                 CLIENT: self.create_client_directory,
                 BUSINESS: self.create_business_directory
-            }[row[CLIENT_TYPE]]
+            }[client_type]
             filename_creator = {
                 CLIENT: self.create_client_filename,
                 BUSINESS: self.create_business_filename
-            }[row[CLIENT_TYPE]]
+            }[client_type]
 
             name = row[CLIENT_NAME]
             name_2 = row[CLIENT_2_NAME]
@@ -76,18 +59,16 @@ class Sorter:
 
             new_filename = filename_creator(row)
 
-            source = os.path.join(self.file_path, file_name).replace("\\","/")
-            destination = os.path.join(full_directory, new_filename).replace("\\","/")
+            source = file_path
+            destination = os.path.join(full_directory, new_filename)
 
             os.rename(source,destination)
-            logging.debug(f"--------------SORTING FILE-----------------\nmoved {file_name}\nfrom: {source}\nto: {destination}")
+            logging.debug(f"--------------FILE SORTED-----------------\nmoved {file_name}\nfrom: {source}\nto: {destination}")
 
             sorted_files.append(file_name)
 
         logging.debug(f"file sorting complete, files sorted: {sorted_files}")
-        CTkMessagebox(title="Success", icon="check",
-                      message="All completed files were successfully sorted!")
-        return
+        return STATUS_SUCCESS
 
     def create_client_directory(self, name:str, name_2:str) -> str:
         first, last = name.split(" ")
