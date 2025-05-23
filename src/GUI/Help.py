@@ -32,7 +32,6 @@ class Help(ctk.CTkFrame):
             for label in self.body_labels:
                 label.configure(wraplength=wrap_length)
 
-        # --- Reserved: Getting Started ------------------------------------------------------------------------
         getting_started_header = ctk.CTkLabel(self.body, text="Getting Started", **style_label_body_header)
         getting_started_header.grid(row=0, column=0, padx=5, pady=(10, 2), sticky='w')
 
@@ -51,7 +50,6 @@ class Help(ctk.CTkFrame):
 
         self.body_labels.append(getting_started_body)
 
-        # --- Data Format Guidelines ------------------------------------------------------------------------
         format_header = ctk.CTkLabel(self.body, text="Valid Data Formats", **style_label_body_header)
         format_header.grid(row=2, column=0, padx=5, pady=(10, 2), sticky='w')
 
@@ -67,7 +65,6 @@ class Help(ctk.CTkFrame):
 
         self.body_labels.append(format_body)
 
-        # --- Miscellaneous Tips ------------------------------------------------------------------------
         tips_header = ctk.CTkLabel(self.body, text="Helpful Tips", **style_label_body_header)
         tips_header.grid(row=4, column=0, padx=5, pady=(10, 2), sticky='w')
 

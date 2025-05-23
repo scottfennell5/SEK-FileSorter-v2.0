@@ -21,6 +21,8 @@ class Table(ctk.CTkFrame):
         self.current_tab = 1
         self.total_tabs = 1
 
+        self.clients = None
+
         self.grid_rowconfigure(0, weight=0)
         self.grid_rowconfigure(1, weight=1)
         self.grid_columnconfigure(0, weight=1)
@@ -32,8 +34,48 @@ class Table(ctk.CTkFrame):
         self.body.grid(row=1,column=0,sticky="nsew")
         self.body.grid_columnconfigure(0, weight=1)
 
+        self.header_label = None
         self.rows = []
-        for i in range(visible_rows):
+
+        self.populate_header()
+        self.populate_body()
+
+    def populate_header(self) -> None:
+        """
+        Populate header based on current tab
+        <- Current tab: curr/max ->
+        """
+
+        def go_prev() -> None:
+            if self.current_tab > 1:
+                self.current_tab -= 1
+                self.update_body()
+                self.update_header()
+
+        def go_next() -> None:
+            if self.current_tab < self.total_tabs:
+                self.current_tab += 1
+                self.update_body()
+                self.update_header()
+
+        prev_button = ctk.CTkButton(self.header, text="⟵", width=30, **style_button,
+                                    command=go_prev,
+                                    state="normal" if self.current_tab > 1 else "disabled")
+        prev_button.grid(row=0,column=0, padx=(0,10), pady=(0,10))
+
+        self.header_label = ctk.CTkLabel(self.header, text=f"{self.current_tab}  /  {self.total_tabs}", **style_label_body)
+        self.header_label.grid(row=0,column=1, pady=(0,10))
+
+        next_button = ctk.CTkButton(self.header, text="⟶", width=30, **style_button,
+                                    command=go_next,
+                                    state="normal" if self.current_tab < self.total_tabs else "disabled")
+        next_button.grid(row=0,column=2, padx=(10,0), pady=(0,10))
+
+    def populate_body(self):
+        """
+        Populate the body with empty widgets, to eliminate the need for redrawing
+        """
+        for i in range(self.visible_rows):
             label = ctk.CTkLabel(self.body, text="", **style_label_body)
             label.grid(row=i, column=0, padx=(0,8), pady=(0,10), sticky='nwe')
             label_status = ctk.CTkLabel(self.body, corner_radius=5, width=50, justify="left", anchor="w")
@@ -42,54 +84,24 @@ class Table(ctk.CTkFrame):
             button.grid(row=i, column=2, sticky='nw')
             self.rows.append((label, label_status, button))
 
-    def populate_header(self) -> None:
-        """
-        Populate header based on current tab
-        <- Current tab: curr/max ->
-        """
-        for widget in self.header.winfo_children():
-            widget.destroy()
+    def update_header(self) -> None:
+        self.header_label.configure(text=f"{self.current_tab}  /  {self.total_tabs}")
 
-        def go_prev() -> None:
-            if self.current_tab > 1:
-                self.current_tab -= 1
-                self.populate_body()
-                self.populate_header()
-
-        def go_next() -> None:
-            if self.current_tab < self.total_tabs:
-                self.current_tab += 1
-                self.populate_body()
-                self.populate_header()
-
-        prev_button = ctk.CTkButton(self.header, text="⟵", width=30, **style_button,
-                                    command=lambda:go_prev(),
-                                    state="normal" if self.current_tab > 1 else "disabled")
-        prev_button.grid(row=0,column=0, padx=(0,10), pady=(0,10))
-
-        tab_label = ctk.CTkLabel(self.header, text=f"{self.current_tab}  /  {self.total_tabs}", **style_label_body)
-        tab_label.grid(row=0,column=1, pady=(0,10))
-
-        next_button = ctk.CTkButton(self.header, text="⟶", width=30, **style_button,
-                                    command=lambda:go_next(),
-                                    state="normal" if self.current_tab < self.total_tabs else "disabled")
-        next_button.grid(row=0,column=2, padx=(10,0), pady=(0,10))
-
-    def populate_body(self, clients:list[tuple[str,str,str,str]]) -> None:
+    def update_body(self) -> None:
         """
         Populates the body with a set number of rows starting from the current tab index
         up to the max number of visible rows.
-        If the number of remaining rows is less than the total
+        If the number of rows to display is less than the total, sets the remaining rows to be invisible
         """
-        self.total_tabs = math.ceil(len(clients) / self.visible_rows)
+        self.total_tabs = math.ceil(len(self.clients) / self.visible_rows)
         logging.debug(f"loading table at current tab {self.current_tab}/{self.total_tabs}")
 
         start = time.time()
         start_index = ((self.current_tab-1) * self.visible_rows)
         for i, (label, label_status, button) in enumerate(self.rows):
             data_index = start_index + i
-            if data_index < len(clients):
-                file, path, status, name = clients[data_index]
+            if data_index < len(self.clients):
+                file, path, status, name = self.clients[data_index]
                 label_text = name
                 if name == DEFAULT_VALUES[CLIENT_NAME]:
                     label_text = file
@@ -98,7 +110,7 @@ class Table(ctk.CTkFrame):
                 label_status.configure(**style)
 
                 button.configure(command=lambda
-                    file_row=self.controller.get_row(path): self.grandparent.open_file(file_row, path))
+                    file_row=self.controller.get_row(path): self.grandparent.open_file(file_row))
                 label.grid()
                 label_status.grid()
                 button.grid()
@@ -128,5 +140,7 @@ class Table(ctk.CTkFrame):
 
     def refresh_values(self, clients:list[tuple[str,str,str,str]]) -> None:
         self.after(100, self.truncate_all_names)
-        self.populate_header()
-        self.populate_body(clients)
+        self.clients = clients
+        self.current_tab = 1
+        self.update_body()
+        self.update_header()

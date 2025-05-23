@@ -8,7 +8,7 @@ from Core.Controller import Controller
 from Utility.constants import (
     FILE_NAME, STATUS, CLIENT_TYPE, CLIENT_NAME, CLIENT_2_NAME, YEAR, DESCRIPTION,
     CLIENT, BUSINESS,
-    RowData)
+    RowData, FILE_PATH, DEFAULT_VALUES)
 
 class FileInput(ctk.CTkFrame):
     MAX_LENGTH = 15
@@ -56,6 +56,7 @@ class FileInput(ctk.CTkFrame):
     def populate_header(self) -> None:
 
         file_name = self.file_data[FILE_NAME]
+        file_path = self.file_data[FILE_PATH]
         if len(file_name) > self.MAX_LENGTH:
             file_name_header = file_name[:self.MAX_LENGTH].rstrip() + "..."
         else:
@@ -67,7 +68,7 @@ class FileInput(ctk.CTkFrame):
 
         open_file_button = ctk.CTkButton(self.header, text="Open PDF", width=125,
                                      fg_color="#1E1E1E", text_color="#BB86FC", hover_color="#2E2E2E",
-                                     command=lambda: self.open_file(file_name))
+                                     command=lambda: self.open_file(file_path))
 
         close_button = ctk.CTkButton(self.header, text="Close", width=125,
                                      fg_color="#C3B1E1", text_color="black", hover_color="#CCCCFF",
@@ -152,20 +153,20 @@ class FileInput(ctk.CTkFrame):
         year = self.file_data[YEAR]
         file_desc = self.file_data[DESCRIPTION]
 
-        if client1_name != "unknown client":
+        if client1_name != DEFAULT_VALUES[CLIENT_NAME]:
             self.entries[tab_type][CLIENT_NAME].insert(0, client1_name)
 
-        if client2_name is not None:
+        if client2_name != DEFAULT_VALUES[CLIENT_2_NAME]:
             self.entries[tab_type][CLIENT_2_NAME].insert(0, client2_name)
             self.entries[tab_type][self.RADIO_VAR].set(1)
         else:
             self.entries[tab_type][self.RADIO_VAR].set(0)
         radiobutton_event()
 
-        if year != -1:
+        if year != DEFAULT_VALUES[YEAR]:
             self.entries[tab_type][YEAR].insert(0, year)
 
-        if file_desc is not None:
+        if file_desc != DEFAULT_VALUES[DESCRIPTION]:
             self.entries[tab_type][DESCRIPTION].insert(0, file_desc)
 
     def populate_footer(self) -> None:
@@ -194,8 +195,8 @@ class FileInput(ctk.CTkFrame):
             status_msg = f"*Data saved, but the following fields are empty or incorrect:\n{errors}"
             self.change_status(status_msg,text_color="#FFD7D7")
 
-    def open_file(self,file_name:str) -> None:
-        error_msg = self.controller.open_file(file_name)
+    def open_file(self,file_path:str) -> None:
+        error_msg = self.controller.open_file(file_path)
         if error_msg:
             self.change_status(error_msg, text_color="#FFD7D7")
 
@@ -210,3 +211,6 @@ class FileInput(ctk.CTkFrame):
     def close(self) -> None:
         if hasattr(self.master, 'close'):
             self.master.close(self)
+        else:
+            logging.warning(f"Somehow master's attribute, 'close', is not found in FileInput, destroying self.  master: {self.master}")
+            self.destroy()

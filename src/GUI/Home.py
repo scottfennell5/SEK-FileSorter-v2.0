@@ -29,6 +29,7 @@ class Home(ctk.CTkFrame):
         self.body = ctk.CTkFrame(self, **style_invisible_frame)
         self.body.columnconfigure(0,weight=1)
         self.table = Table(self.body, self.controller, **style_invisible_frame)
+        self.table.place(relx=0, rely=0, relwidth=1, relheight=1)
         self.populate_body()
         self.body.grid(row=1, column=0, padx=5, pady=5, sticky='nsew')
 
@@ -63,11 +64,8 @@ class Home(ctk.CTkFrame):
             label.grid(row=0, column=0, padx=8, pady=5, sticky='new')
             return
 
-        # grabs the specified columns below, and
         clients = list(zip(files[FILE_NAME], files[FILE_PATH], files[STATUS], files[CLIENT_NAME]))
-
         self.table.refresh_values(clients)
-        self.table.place(relx=0, rely=0, relwidth=1, relheight=1)
 
         end = time.time()
         logging.debug(f"populate_table:{round(end - start, 3)}s")
