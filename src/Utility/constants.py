@@ -50,7 +50,7 @@ DEFAULT_SETTINGS = {
 
 #data validation
 VALID_NAME_CLIENT = r"[A-Z][a-z]* [A-Z][a-z]*"
-VALID_NAME_BUSINESS = r"([A-Z0-9]+ )+[A-Z]{3}"
+VALID_NAME_BUSINESS = r"([A-Z0-9]+ )"
 VALID_YEAR = r"\d{4}"
 
 NAME_VALIDATORS = {
