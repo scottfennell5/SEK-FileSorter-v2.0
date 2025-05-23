@@ -19,18 +19,18 @@ def controller():
 def test_initialization(controller):
     assert hasattr(controller, "data_handler")
     assert hasattr(controller, "sorter")
-    assert controller.observers  # should include dataHandler and sorter
+    assert controller.observer  # should include dataHandler and sorter
 
 def test_set_observer_filepath(controller):
     observer = MagicMock()
-    controller.observers = [observer]
+    controller.observer = [observer]
     controller.set_observer_filepath("some/path")
     observer.set_file_path.assert_called_with("some/path")
     observer.update.assert_called_once()
 
 def test_set_observer_targetpath(controller):
     observer = MagicMock()
-    controller.observers = [observer]
+    controller.observer = [observer]
     controller.set_observer_targetpath("target/path")
     observer.set_target_path.assert_called_with("target/path")
     observer.update.assert_called_once()

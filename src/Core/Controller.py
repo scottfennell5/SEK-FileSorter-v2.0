@@ -19,16 +19,15 @@ class Controller:
         logging.debug("Init Controller")
         self.data_handler = data_handler or DataHandler()
         self.sorter = sorter or Sorter(target_path=self.data_handler.get_target_path())
-        self.observers = []
+        self.observer = None
 
     #TODO: set observers to UI components
-    def new_observer(self, observer: CTkBaseClass) -> None:
-        self.observers.append(observer)
+    def set_observer(self, observer: CTkBaseClass) -> None:
+        self.observer = observer
 
     def update(self) -> None:
         self.data_handler.update()
-        for observer in self.observers:
-            observer.update()
+        self.observer.update()
 
     def get_data_copy(self) -> pd.DataFrame:
         return self.data_handler.get_data_copy()

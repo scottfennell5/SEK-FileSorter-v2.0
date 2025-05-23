@@ -6,7 +6,7 @@ import time
 from Core.Controller import Controller
 from GUI.FileInput import FileInput
 from GUI.Table import Table
-from Utility.constants import FILE_NAME, STATUS, CLIENT_NAME, RowData, DEFAULT_VALUES
+from Utility.constants import FILE_NAME, STATUS, CLIENT_NAME, RowData, DEFAULT_VALUES, FILE_PATH
 from Utility.style import style_button, style_label_header, style_status_complete, style_status_incomplete, \
     style_sub_frame, style_label_body, style_invisible_frame
 
@@ -15,6 +15,7 @@ class Home(ctk.CTkFrame):
     def __init__(self, master:ctk.CTkBaseClass, controller:Controller, **kwargs):
         super().__init__(master, **kwargs)
         self.controller = controller
+        self.controller.set_observer(self)
         self.clients = None
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=0)
@@ -25,9 +26,10 @@ class Home(ctk.CTkFrame):
         self.header.grid_columnconfigure(0, weight=1)
         self.header.grid(row=0,column=0,padx=5,pady=5,sticky='w')
 
-        self.table_frame = ctk.CTkFrame(self, **style_invisible_frame)
+        self.body = ctk.CTkFrame(self, **style_invisible_frame)
+        self.table = Table(self.body, self.controller, **style_invisible_frame)
         self.populate_body()
-        self.table_frame.grid(row=1, column=0, padx=5, pady=5, sticky='nsew')
+        self.body.grid(row=1, column=0, padx=5, pady=5, sticky='nsew')
 
     def populate_header(self) -> None:
         col = 0
@@ -51,22 +53,19 @@ class Home(ctk.CTkFrame):
     def populate_body(self) -> None:
         start = time.time()
 
-        for widget in self.table_frame.winfo_children():
-            widget.destroy()
-
         files = self.controller.get_data_copy()
         logging.debug(f"populating table with {len(files)} files")
         if files.empty or files is None:
-            label = ctk.CTkLabel(self.table_frame,
+            label = ctk.CTkLabel(self.body,
                                  text="No files detected! \n\n\nIf you expected files here, \nmake sure the Client Directory path in 'Settings' is correct.")
             label.grid(row=0, column=0, padx=8, pady=5, sticky='new')
             return
 
         # grabs the specified columns below, and
-        clients = list(zip(files[FILE_NAME], files[STATUS], files[CLIENT_NAME]))
+        clients = list(zip(files[FILE_NAME], files[FILE_PATH], files[STATUS], files[CLIENT_NAME]))
 
-        table = Table(self.table_frame, self.controller, clients, **style_invisible_frame)
-        table.place(relx=0, rely=0, relwidth=1, relheight=1)
+        self.table.refresh_values(clients)
+        self.table.place(relx=0, rely=0, relwidth=1, relheight=1)
 
         end = time.time()
         logging.debug(f"populate_table:{round(end - start, 3)}s")
@@ -118,9 +117,7 @@ class Home(ctk.CTkFrame):
 
     def update(self) -> None:
         logging.debug("Refreshing the UI with updated data.")
-        self.controller.update()
         self.populate_body()
 
     def sort(self) -> None:
         self.controller.sort_files()
-        self.update()

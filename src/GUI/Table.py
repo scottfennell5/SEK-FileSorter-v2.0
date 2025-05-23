@@ -10,17 +10,16 @@ from Utility.constants import CLIENT_NAME, DEFAULT_VALUES
 from Utility.style import style_status_incomplete, style_label_body, style_button, style_status_complete, style_invisible_frame
 
 class Table(ctk.CTkFrame):
-    def __init__(self, master:Home, controller:Controller, data:list[tuple],
+    def __init__(self, master:Home, controller:Controller,
                  row_height=40, visible_rows=14, *args, **kwargs):
         super().__init__(master, *args, **kwargs)
         self.grandparent = master.master
         self.controller = controller
-        self.data = data
         self.row_height = row_height
         self.visible_rows = visible_rows
 
         self.current_tab = 1
-        self.total_tabs = math.ceil(len(self.data)/self.visible_rows)
+        self.total_tabs = 1
 
         self.grid_rowconfigure(0, weight=0)
         self.grid_rowconfigure(1, weight=1)
@@ -42,8 +41,6 @@ class Table(ctk.CTkFrame):
             button = ctk.CTkButton(self.body, text="Open File", width=125, **style_button)
             button.grid(row=i, column=2, sticky='nw')
             self.rows.append((label, label_status, button))
-
-        self.update()
 
     def populate_header(self) -> None:
         """
@@ -78,22 +75,21 @@ class Table(ctk.CTkFrame):
                                     state="normal" if self.current_tab < self.total_tabs else "disabled")
         next_button.grid(row=0,column=2, padx=(10,0), pady=(0,10))
 
-    def populate_body(self) -> None:
+    def populate_body(self, clients:list[tuple[str,str,str,str]]) -> None:
         """
         Populates the body with a set number of rows starting from the current tab index
         up to the max number of visible rows.
         If the number of remaining rows is less than the total
         """
-        MAX_LENGTH = 20
-
+        self.total_tabs = math.ceil(len(clients) / self.visible_rows)
         logging.debug(f"loading table at current tab {self.current_tab}/{self.total_tabs}")
 
         start = time.time()
         start_index = ((self.current_tab-1) * self.visible_rows)
         for i, (label, label_status, button) in enumerate(self.rows):
             data_index = start_index + i
-            if data_index < len(self.data):
-                file, status, name = self.data[data_index]
+            if data_index < len(clients):
+                file, path, status, name = clients[data_index]
                 label_text = name
                 if name == DEFAULT_VALUES[CLIENT_NAME]:
                     label_text = file
@@ -102,7 +98,7 @@ class Table(ctk.CTkFrame):
                 label_status.configure(**style)
 
                 button.configure(command=lambda
-                    file_row=self.controller.get_row(self.data[data_index][0]): self.grandparent.open_file(file_row))
+                    file_row=self.controller.get_row(path): self.grandparent.open_file(file_row, path))
                 label.grid()
                 label_status.grid()
                 button.grid()
@@ -130,7 +126,7 @@ class Table(ctk.CTkFrame):
             text = text[:-1]
         return text+ellipsis if text else ellipsis
 
-    def update(self) -> None:
+    def refresh_values(self, clients:list[tuple[str,str,str,str]]) -> None:
         self.after(100, self.truncate_all_names)
         self.populate_header()
-        self.populate_body()
+        self.populate_body(clients)
