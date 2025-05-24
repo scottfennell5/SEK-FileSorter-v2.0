@@ -114,8 +114,6 @@ class DataHandler:
             if (validated := get_valid_path(path)) is not None
         ]
 
-        print(self.file_paths)
-
         self.target_path = get_valid_path(settings.get(TARGET_ID, ""))
 
     def load_data_instance(self) -> None:

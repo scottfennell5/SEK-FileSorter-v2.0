@@ -28,7 +28,6 @@ class Help(ctk.CTkFrame):
 
         def update_wraplengths():
             wrap_length = self.master.winfo_width() - 200
-            print(wrap_length)
             for label in self.body_labels:
                 label.configure(wraplength=wrap_length)
 
@@ -37,13 +36,13 @@ class Help(ctk.CTkFrame):
 
         getting_started_body = ctk.CTkLabel(self.body, **style_label_body,
             text=(
-                "1.)Visit the 'Settings' page to ensure the scanned and target directories are set correctly.\n"
-                "2.)Navigate to the 'Home' menu to see the list of files pulled from the provided scan directory.\n"
+                "1.)Visit the 'Settings' page to ensure the scanned and target directories are set correctly.\n\n"
+                "2.)Navigate to the 'Home' menu to see the list of files pulled from the provided scan directory.\n\n"
                 "3.)Next to the name of each file, you will see either 'Incomplete' or 'Complete'.\n"
-                "\tNote:'Incomplete' means there is still more data to enter, while 'Complete' means it is ready to be sorted.\n"
+                "Note:'Incomplete' means there is still more data to enter, while 'Complete' means it is ready to be sorted.\n\n"
                 "4.)Once all files you wish to sort are ready and marked as 'Complete,' press the Sort button to sort the files into the target directory.\n"
-                "\tNote:if a client directory does not exist, a new one will be created automatically.\n"
-                "5.)If any unexpected issues occur, please contact Scott directly or raise an issue on GitHub.\n"
+                "Note:if a client directory does not exist, a new one will be created automatically.\n\n"
+                "5.)If any unexpected issues occur, please contact Scott directly or raise an issue on GitHub.\n\n"
             )
         )
         getting_started_body.grid(row=1, column=0, padx=10, pady=2, sticky='w')
@@ -58,7 +57,7 @@ class Help(ctk.CTkFrame):
                 "- Client Name: First and last name, capitalized \n\t--(e.g., 'John Smith')\n"
                 "- Business Name: All caps with optional numbers and spaces \n\t--(e.g., 'ABC 123 LLC')\n"
                 "- Year: 4-digit numeric value \n\t--(e.g., 2023)\n"
-                "- File Description: Optional. Brief text describing the file’s contents or purpose."
+                "- File Description: Brief text describing the file’s contents or purpose.\n\t--(e.g. Form 8879)\n"
             )
         )
         format_body.grid(row=3, column=0, padx=10, pady=2, sticky='w')

@@ -1,14 +1,12 @@
 import customtkinter as ctk
-from functools import partial
 import logging
 import time
 
 from Core.Controller import Controller
-from GUI.FileInput import FileInput
-from GUI.Table import Table
-from Utility.constants import FILE_NAME, STATUS, CLIENT_NAME, RowData, DEFAULT_VALUES, FILE_PATH
-from Utility.style import style_button, style_label_header, style_status_complete, style_status_incomplete, \
-    style_sub_frame, style_label_body, style_invisible_frame
+from GUI.Sub_Menus.FileInput import FileInput
+from GUI.Sub_Menus.Table import Table
+from Utility.constants import FILE_NAME, STATUS, CLIENT_NAME, RowData, FILE_PATH
+from Utility.style import style_button, style_label_header, style_sub_frame, style_invisible_frame
 
 
 class Home(ctk.CTkFrame):

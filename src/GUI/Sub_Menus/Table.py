@@ -35,6 +35,8 @@ class Table(ctk.CTkFrame):
         self.body.grid_columnconfigure(0, weight=1)
 
         self.header_label = None
+        self.prev_button = None
+        self.next_button = None
         self.rows = []
 
         self.populate_header()
@@ -58,18 +60,18 @@ class Table(ctk.CTkFrame):
                 self.update_body()
                 self.update_header()
 
-        prev_button = ctk.CTkButton(self.header, text="⟵", width=30, **style_button,
+        self.prev_button = ctk.CTkButton(self.header, text="⟵", width=30, **style_button,
                                     command=go_prev,
-                                    state="normal" if self.current_tab > 1 else "disabled")
-        prev_button.grid(row=0,column=0, padx=(0,10), pady=(0,10))
+                                    state="disabled")
+        self.prev_button.grid(row=0,column=0, padx=(0,10), pady=(0,10))
 
         self.header_label = ctk.CTkLabel(self.header, text=f"{self.current_tab}  /  {self.total_tabs}", **style_label_body)
         self.header_label.grid(row=0,column=1, pady=(0,10))
 
-        next_button = ctk.CTkButton(self.header, text="⟶", width=30, **style_button,
+        self.next_button = ctk.CTkButton(self.header, text="⟶", width=30, **style_button,
                                     command=go_next,
-                                    state="normal" if self.current_tab < self.total_tabs else "disabled")
-        next_button.grid(row=0,column=2, padx=(10,0), pady=(0,10))
+                                    state="disabled")
+        self.next_button.grid(row=0,column=2, padx=(10,0), pady=(0,10))
 
     def populate_body(self):
         """
@@ -86,6 +88,8 @@ class Table(ctk.CTkFrame):
 
     def update_header(self) -> None:
         self.header_label.configure(text=f"{self.current_tab}  /  {self.total_tabs}")
+        self.prev_button.configure(state="normal" if self.current_tab > 1 else "disabled")
+        self.next_button.configure(state="normal" if self.current_tab < self.total_tabs else "disabled")
 
     def update_body(self) -> None:
         """

@@ -39,7 +39,7 @@ class Controller:
         error_msg = self.data_handler.open_file(file_path)
         return error_msg
 
-    def get_path(self, pathID:str) -> str:
+    def get_path(self, pathID:str) -> str | list[str]:
         path_map = {
             FILES_ID: self.data_handler.get_file_paths(),
             TARGET_ID: self.data_handler.get_target_path()
