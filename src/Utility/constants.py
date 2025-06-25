@@ -9,6 +9,7 @@ CLIENT_NAME = 'Client_Name'
 CLIENT_2_NAME = 'Client_2_Name'
 YEAR = 'Year'
 DESCRIPTION = 'File_Description'
+TARGET = 'Target'
 
 DEFAULT_DATAFRAME = pd.DataFrame({
     FILE_NAME:pd.Series(dtype=str),
@@ -17,7 +18,8 @@ DEFAULT_DATAFRAME = pd.DataFrame({
     CLIENT_NAME:pd.Series(dtype=str),
     CLIENT_2_NAME:pd.Series(dtype=str),
     YEAR:pd.Series(dtype=int),
-    DESCRIPTION:pd.Series(dtype=str)
+    DESCRIPTION:pd.Series(dtype=str),
+    TARGET:pd.Series(dtype=str)
 })
 
 DEFAULT_VALUES = {
@@ -27,13 +29,15 @@ DEFAULT_VALUES = {
     CLIENT_NAME: 'unknown client',
     CLIENT_2_NAME: None,
     YEAR: -1,
-    DESCRIPTION: None
+    DESCRIPTION: None,
+    TARGET: None
 }
 
 CLIENT = "Client"
 BUSINESS = "Business"
 
-INCOME_TAX = "Income Tax"
+CUSTOM = "Custom"
+TARGET_VALUES = ["Income Tax", "Insurance", "Payroll", "Supporting Documents", CUSTOM]
 
 #settings & file paths
 FILES_ID = "files"
@@ -46,7 +50,7 @@ DEFAULT_SETTINGS = {
 
 #data validation
 VALID_NAME_CLIENT = r"[A-Z][a-z]* [A-Z][a-z]*"
-VALID_NAME_BUSINESS = r"([A-Z0-9]+ )"
+VALID_NAME_BUSINESS = r"^[A-Z0-9 ]+$"
 VALID_YEAR = r"\d{4}"
 
 NAME_VALIDATORS = {
@@ -62,6 +66,7 @@ class RowData(TypedDict):
     Client_2_Name: str
     Year: int
     File_Description: str
+    Target: str
 
 #UI Navigation
 HOME_ID = "home"

@@ -5,7 +5,7 @@ from CTkMessagebox import CTkMessagebox
 
 from Utility.constants import (
     FILE_NAME, CLIENT_TYPE, CLIENT_NAME, CLIENT_2_NAME, YEAR, DESCRIPTION,
-    CLIENT, BUSINESS, INCOME_TAX)
+    CLIENT, BUSINESS, TARGET)
 
 
 class Sorter:
@@ -35,7 +35,7 @@ class Sorter:
     def sort_files(self, files_to_sort:pd.DataFrame) -> None:
         """
         Accepts a pandas dataframe containing all files where STATUS is True, sorts them into directories based on provided info
-        Creates a new directory & income tax folder if one is not found
+        Creates a new directory & target folder if one is not found
         """
         sorted_files = []
         if not os.path.exists(self.file_path):
@@ -70,7 +70,7 @@ class Sorter:
             name = row[CLIENT_NAME]
             name_2 = row[CLIENT_2_NAME]
             directory = directory_creator(name, name_2)
-            full_directory = os.path.join(self.target_path, directory, INCOME_TAX)
+            full_directory = os.path.join(self.target_path, directory, row[TARGET])
 
             os.makedirs(full_directory, exist_ok=True)
 

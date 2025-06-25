@@ -10,7 +10,7 @@ import logging
 from Utility.constants import (
     FILE_NAME, STATUS, CLIENT_TYPE, CLIENT_NAME, CLIENT_2_NAME, YEAR, DESCRIPTION,
     FILES_ID, TARGET_ID,
-    DEFAULT_VALUES, DEFAULT_SETTINGS, DEFAULT_DATAFRAME, RowData)
+    DEFAULT_VALUES, DEFAULT_SETTINGS, DEFAULT_DATAFRAME, RowData, TARGET)
 
 class DataHandler:
     def __init__(self):
@@ -93,6 +93,9 @@ class DataHandler:
                       sort_keys=False)
 
     def apply_settings(self, settings:dict) -> None:
+        """
+        Retrieves stored paths from settings file and sets the file_path and target_path variables accordingly
+        """
         def get_valid_path(key: str) -> str:
             path = settings.get(key)
             if not path:
@@ -207,13 +210,14 @@ class DataHandler:
             else:
                 logging.debug(f"new file found {file}, adding with filler data...")
                 new_row = pd.DataFrame({
-                    'File_Name': [file],
-                    'File_Status': DEFAULT_VALUES[STATUS],
-                    'Client_Type': DEFAULT_VALUES[CLIENT_TYPE],
-                    'Client_Name': DEFAULT_VALUES[CLIENT_NAME],
-                    'Client_2_Name': DEFAULT_VALUES[CLIENT_2_NAME],
-                    'Year': DEFAULT_VALUES[YEAR],
-                    'File_Description': DEFAULT_VALUES[DESCRIPTION]
+                    FILE_NAME: [file],
+                    STATUS: DEFAULT_VALUES[STATUS],
+                    CLIENT_TYPE: DEFAULT_VALUES[CLIENT_TYPE],
+                    CLIENT_NAME: DEFAULT_VALUES[CLIENT_NAME],
+                    CLIENT_2_NAME: DEFAULT_VALUES[CLIENT_2_NAME],
+                    YEAR: DEFAULT_VALUES[YEAR],
+                    DESCRIPTION: DEFAULT_VALUES[DESCRIPTION],
+                    TARGET: DEFAULT_VALUES[TARGET]
                 })
                 self.files_df = pd.concat([self.files_df, new_row], ignore_index=True)
 
@@ -236,6 +240,7 @@ class DataHandler:
         self.files_df.at[row_index, CLIENT_2_NAME] = row_data[CLIENT_2_NAME]
         self.files_df.at[row_index, YEAR] = int(row_data[YEAR])
         self.files_df.at[row_index, DESCRIPTION] = row_data[DESCRIPTION]
+        self.files_df.at[row_index, TARGET] = row_data[TARGET]
 
         logging.debug(f"New row values: {self.files_df.loc[row_index]}")
         self.save_data_instance()

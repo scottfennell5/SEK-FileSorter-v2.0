@@ -23,6 +23,7 @@ class FileSorter(ctk.CTk):
         self.geometry(f'{width}x{height}+{center[0]}+{center[1]}')
         self.resizable(False, False)
         self.title('SEK File Sorter v2.0')
+        ctk.set_appearance_mode("dark")
         self.configure(fg_color="#121212")
 
         self.grid_columnconfigure(0, weight=1)

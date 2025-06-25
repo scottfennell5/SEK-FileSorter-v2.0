@@ -8,12 +8,15 @@ from Core.Controller import Controller
 from Utility.constants import (
     FILE_NAME, STATUS, CLIENT_TYPE, CLIENT_NAME, CLIENT_2_NAME, YEAR, DESCRIPTION,
     CLIENT, BUSINESS,
-    RowData)
+    RowData, TARGET, TARGET_VALUES, CUSTOM)
+from Utility.style import style_invisible_frame
+
 
 class FileInput(ctk.CTkFrame):
     MAX_LENGTH = 15
 
     RADIO_VAR = "radio_var"
+    TARGET_VAR = "target_var"
     SAMPLE_DATA = {
         CLIENT: {
             CLIENT_NAME: "Bob Smith",
@@ -94,9 +97,10 @@ class FileInput(ctk.CTkFrame):
 
     def create_labeled_entry(self, parent:Any, label_text:str, placeholder:str) -> ctk.CTkEntry:
         """
-            Label_text: [placeholder   ]
+            Produces a data entry row with the following format:
+            Label text: [text box w/ placeholder text]
         """
-        row = ctk.CTkFrame(parent, fg_color="transparent")
+        row = ctk.CTkFrame(parent, **style_invisible_frame)
         row.pack(fill="x", pady=5)
         label = ctk.CTkLabel(row, text=label_text, width=100, anchor="w")
         label.pack(side="left")
@@ -105,17 +109,17 @@ class FileInput(ctk.CTkFrame):
         return entry
 
     def populate_tab(self, tab:Any, tab_type:str) -> None:
-        container = ctk.CTkFrame(tab, fg_color="transparent")
+        container = ctk.CTkFrame(tab, **style_invisible_frame)
         container.pack(fill="both", expand=True, padx=20, pady=20)
 
-        client1_frame = ctk.CTkFrame(container, fg_color="transparent")
+        client1_frame = ctk.CTkFrame(container, **style_invisible_frame)
         client1_frame.grid(row=0, column=0, sticky="ew", padx=20, pady=10)
         client1_label = ctk.CTkLabel(client1_frame, text="Client 1", font=ctk.CTkFont(size=16, weight="bold"))
         client1_label.pack(anchor="w", pady=(0, 5))
         entry = self.create_labeled_entry(client1_frame, "Name:", self.SAMPLE_DATA[tab_type][CLIENT_NAME])
         self.entries[tab_type][CLIENT_NAME] = entry
 
-        radio_frame = ctk.CTkFrame(container, fg_color="transparent")
+        radio_frame = ctk.CTkFrame(container, **style_invisible_frame)
         radio_frame.grid(row=1, column=0, sticky="ew", padx=20, pady=10)
         radio_label = ctk.CTkLabel(radio_frame, text="Is there another client?", width=100, anchor="w")
         radio_label.pack(side="left")
@@ -133,24 +137,46 @@ class FileInput(ctk.CTkFrame):
         ctk.CTkRadioButton(radio_frame, text="No", variable=self.entries[tab_type][self.RADIO_VAR], value=0,
                            command=radiobutton_event).pack(side="left", padx=10)
 
-        client2_frame = ctk.CTkFrame(container, fg_color="transparent")
+        client2_frame = ctk.CTkFrame(container, **style_invisible_frame)
         client2_label = ctk.CTkLabel(client2_frame, text="Client 2", font=ctk.CTkFont(size=16, weight="bold"))
         client2_label.pack(anchor="w", pady=(0, 5))
         entry = self.create_labeled_entry(client2_frame, "Name:", self.SAMPLE_DATA[tab_type][CLIENT_2_NAME])
         self.entries[tab_type][CLIENT_2_NAME] = entry
 
-        misc_frame = ctk.CTkFrame(container, fg_color="transparent")
-        misc_frame.grid(row=3, column=0, sticky="ew", padx=20, pady=10)
+        def optionmenu_event(choice):
+            if choice == CUSTOM:
+                custom_entry_frame.grid(row=4, column=0, sticky="ew", padx=20, pady=10)
+            else:
+                custom_entry_frame.grid_forget()
+
+        dropdown_frame = ctk.CTkFrame(container, **style_invisible_frame)
+        dropdown_frame.grid(row=3, column=0, sticky="ew", padx=20, pady=10)
+        dropdown_label = ctk.CTkLabel(dropdown_frame, text="Target:", )
+        dropdown_label.pack(side="left")
+        dropdown_var = ctk.StringVar(value=TARGET_VALUES[0])
+        self.entries[tab_type][self.TARGET_VAR] = dropdown_var
+        dropdown_menu = ctk.CTkOptionMenu(dropdown_frame, values=TARGET_VALUES,
+                                          command=optionmenu_event,
+                                          variable=self.entries[tab_type][self.TARGET_VAR])
+        dropdown_menu.pack(side="left", padx=(10, 0))
+        dropdown_menu.set(TARGET_VALUES[0])
+        custom_entry_frame = ctk.CTkFrame(container, **style_invisible_frame)
+        entry = self.create_labeled_entry(custom_entry_frame, "Custom Target: ", "")
+        self.entries[tab_type][TARGET] = entry
+
+        misc_frame = ctk.CTkFrame(container, **style_invisible_frame)
+        misc_frame.grid(row=5, column=0, sticky="ew", padx=20, pady=10)
         entry = self.create_labeled_entry(misc_frame, "Year:", "1984")
         self.entries[tab_type][YEAR] = entry
         entry = self.create_labeled_entry(misc_frame, "File Description:", "Form 8879")
         self.entries[tab_type][DESCRIPTION] = entry
 
-        # fill already completed entry labels
+        #fill already completed entry labels based on existing data
         client1_name = self.file_data[CLIENT_NAME]
         client2_name = self.file_data[CLIENT_2_NAME]
         year = self.file_data[YEAR]
         file_desc = self.file_data[DESCRIPTION]
+        target = self.file_data[TARGET]
 
         if client1_name != "unknown client":
             self.entries[tab_type][CLIENT_NAME].insert(0, client1_name)
@@ -161,6 +187,13 @@ class FileInput(ctk.CTkFrame):
         else:
             self.entries[tab_type][self.RADIO_VAR].set(0)
         radiobutton_event()
+
+        if target is not None:
+            if target in TARGET_VALUES:
+                dropdown_menu.set(target)
+            else:
+                dropdown_menu.set(CUSTOM)
+                self.entries[tab_type][TARGET].insert(0, target)
 
         if year != -1:
             self.entries[tab_type][YEAR].insert(0, year)
@@ -176,6 +209,12 @@ class FileInput(ctk.CTkFrame):
         close_button.pack(side=ctk.RIGHT, padx=4, pady=5)
 
     def save_changes(self, tab_type:str) -> None:
+        #only grabs custom value if one is entered
+        if self.entries[tab_type][self.TARGET_VAR].get() == CUSTOM:
+            target = self.entries[tab_type][TARGET].get()
+        else:
+            target = self.entries[tab_type][self.TARGET_VAR].get()
+
         self.file_data = {
             FILE_NAME:self.file_data_original[FILE_NAME],
             STATUS:self.file_data_original[STATUS],
@@ -183,7 +222,8 @@ class FileInput(ctk.CTkFrame):
             CLIENT_NAME:self.entries[tab_type][CLIENT_NAME].get(),
             CLIENT_2_NAME:self.entries[tab_type][CLIENT_2_NAME].get(),
             YEAR:self.entries[tab_type][YEAR].get(),
-            DESCRIPTION:self.entries[tab_type][DESCRIPTION].get()
+            DESCRIPTION:self.entries[tab_type][DESCRIPTION].get(),
+            TARGET:target
         }
         errors = self.controller.save_row_changes(self.file_data, self.entries[tab_type][self.RADIO_VAR].get())
 

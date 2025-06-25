@@ -7,10 +7,10 @@ from CTkMessagebox import CTkMessagebox
 from Core.Sorter import Sorter
 from Core.DataHandler import DataHandler
 from Utility.constants import (
-    FILE_NAME, STATUS, CLIENT_TYPE, CLIENT_NAME, CLIENT_2_NAME, YEAR, DESCRIPTION, #indexes
+    FILE_NAME, STATUS, CLIENT_TYPE, CLIENT_NAME, CLIENT_2_NAME, YEAR, DESCRIPTION,  # indexes
     FILES_ID, TARGET_ID,
     NAME_VALIDATORS, VALID_YEAR, DEFAULT_VALUES,
-    RowData #type hinting
+    RowData, TARGET  # type hinting
 )
 
 class Controller:
@@ -134,6 +134,12 @@ class Controller:
                 cleaned_data[CLIENT_2_NAME] = name2
             else:
                 errors.append("Client 2")
+
+        target = file_data[TARGET]
+        if target == "":
+            errors.append("Target")
+        else:
+            cleaned_data[TARGET] = target
 
         year = file_data[YEAR]
         if re.fullmatch(VALID_YEAR, year):
