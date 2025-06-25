@@ -28,7 +28,6 @@ class Help(ctk.CTkFrame):
 
         def update_wraplengths():
             wrap_length = self.master.winfo_width() - 200
-            print(wrap_length)
             for label in self.body_labels:
                 label.configure(wraplength=wrap_length)
 

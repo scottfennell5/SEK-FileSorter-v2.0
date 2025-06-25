@@ -80,6 +80,8 @@ class FileInput(ctk.CTkFrame):
         open_file_button.pack(side=ctk.RIGHT, padx=4, pady=5)
 
     def populate_body(self) -> None:
+        formatting_reminder_label = ctk.CTkLabel(self.body,text="Tip: Formatting guide can be found in the 'Help' screen.")
+        formatting_reminder_label.pack(side="top",padx=(10,0))
         self.tab_view = ctk.CTkTabview(self.body,fg_color="#1A1A1A", corner_radius=0)
         self.tab_view.pack(fill="both",expand=True)
         tab_client = self.tab_view.add(CLIENT)
